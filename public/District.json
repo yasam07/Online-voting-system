@@ -1,0 +1,27 @@
+[
+    {
+      "name": "Kathmandu",
+      "municipalities": [
+        "Kathmandu Metropolitan",
+        "Kageshwari Manohara",
+        "Budhanilkantha"
+      ]
+    },
+    {
+      "name": "Lalitpur",
+      "municipalities": [
+        "Lalitpur Metropolitan",
+        "Godawari",
+        "Mahalaxmi"
+      ]
+    },
+    {
+      "name": "Bhaktapur",
+      "municipalities": [
+        "Bhaktapur Municipality",
+        "Madhyapur Thimi",
+        "Changunarayan"
+      ]
+    }
+  ]
+  

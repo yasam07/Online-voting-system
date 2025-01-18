@@ -1,0 +1,89 @@
+[
+  {
+    "fullName": "test1",
+    "fatherName": "Father1",
+    "dateOfBirth": "2005-02-02",
+    "gender": "Female",
+    "nationalId": "1",
+    "district": "Bhaktapur",
+    "municipality": "Madhyapur Thimi"
+   
+  },
+  {
+    "fullName": "test88",
+    "fatherName": "Father88",
+    "dateOfBirth": "2005-02-02",
+    "gender": "Female",
+    "nationalId": "88",
+    "district": "Bhaktapur",
+    "municipality": "Madhyapur Thimi"
+   
+  },
+  {
+    "fullName": "test33",
+    "fatherName": "Father33",
+    "dateOfBirth": "2000-01-01",
+    "gender": "Male",
+    "nationalId": "33",
+    "district": "Bhaktapur",
+    "municipality": "Madhyapur Thimi",
+    "ward": "1"
+  },
+  {
+    "fullName": "test44",
+    "fatherName": "Father44",
+    "dateOfBirth": "2000-01-01",
+    "gender": "Male",
+    "nationalId": "44",
+    "district": "Bhaktapur",
+    "municipality": "Madhyapur Thimi",
+    "ward": "1"
+  },
+  
+  {
+    "fullName": "test22",
+    "fatherName": "Father22",
+    "dateOfBirth": "2000-01-01",
+    "gender": "Male",
+
+    "nationalId": "22",
+    "district": "Bhaktapur",
+    "municipality": "Madhyapur Thimi",
+    "ward": "1"
+  },
+  {
+    "fullName": "test0",
+    "fatherName": "Father0",
+    "dateOfBirth": "2000-01-01",
+    "gender": "Male",
+
+    "nationalId": "0",
+    "district": "Kathmandu",
+    "municipality": "Kathmandu Metropolitan",
+    "ward": "1"
+  },
+  {
+    "fullName": "san777",
+    "fatherName": "Father2",
+    "dateOfBirth": "1995-02-14",
+    "gender": "Male",
+
+    "password": "$2a$10$S7F1Zh0Qq5bhAXqkA54ekOuCV1htV4DW15kdFmp1Az9ZXyYsZnQ2i",
+    "nationalId": "12345678",
+    "district": "Kathmandu",
+    "municipality": "Kathmandu Metropolitan",
+    "ward": "2"
+  },
+  {
+    "fullName": "Jane Smith",
+    "fatherName": "John Smith",
+    "dateOfBirth": "1988-03-12",
+    "gender": "Female",
+
+    "password": "$2a$10$S7F1Zh0Qq5bhAXqkA54ekOuCV1htV4DW15kdFmp1Az9ZXyYsZnQ2i",
+    "nationalId": "0987654321",
+    "district": "Bhaktapur",
+    "municipality": "Madhyapur Thimi",
+    "ward": "1"
+  }
+]
