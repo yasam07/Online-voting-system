@@ -20,7 +20,23 @@ export default function CandidatePage() {
       const response = await fetch('/api/candidates');
       if (!response.ok) throw new Error('Failed to fetch candidates');
       const data = await response.json();
-      setCandidates(data);
+
+      // Fetch elections
+      const electionsResponse = await fetch('/api/elections');
+      if (!electionsResponse.ok) throw new Error('Failed to fetch elections');
+      const { elections } = await electionsResponse.json();
+
+      const electionNames = elections.reduce((acc, election) => {
+        acc[election._id] = election.name;
+        return acc;
+      }, {});
+
+      const candidatesWithElectionNames = data.map((candidate) => ({
+        ...candidate,
+        electionName: electionNames[candidate.electionId] || 'Unknown Election',
+      }));
+
+      setCandidates(candidatesWithElectionNames);
     } catch (error) {
       toast.error(error.message || 'Error fetching candidates');
     } finally {
@@ -28,42 +44,64 @@ export default function CandidatePage() {
     }
   };
 
-  const handleDelete = async (district, municipality, postType, candidateId) => {
+  const handleDelete = async (candidateId) => {
+    console.log(candidateId)
     if (!window.confirm('Are you sure you want to delete this candidate?')) return;
   
     try {
-      const response = await fetch('/api/candidates/delete', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ district, municipality, postType, candidateId }),
+      // Sending a DELETE request to delete a candidate by ID
+      const response = await fetch(`/api/candidates/delete/${candidateId}`, {
+        method: 'DELETE',  // Ensure method is DELETE
       });
   
-      const result = await response.json();
-      if (response.ok) {
-        toast.success(result.message || 'Candidate deleted successfully');
-        fetchCandidates(); // Refresh candidates
-      } else {
-        throw new Error(result.message || 'Failed to delete candidate');
+      if (!response.ok) {
+        throw new Error('Failed to delete candidate');
       }
+  
+      const result = await response.json();
+      toast.success(result.message || 'Candidate deleted successfully');
+      
+      // Optimistically remove the candidate from the list
+      setCandidates((prevCandidates) =>
+        prevCandidates.filter((candidate) => candidate._id !== candidateId)
+      );
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || 'Error deleting candidate');
     }
   };
   
+  
+  
 
-  const groupCandidates = (candidates) =>
+  const groupCandidatesByElectionId = (candidates) =>
     candidates.reduce((acc, candidate) => {
-      const { district, municipality } = candidate;
-      if (!acc[district]) acc[district] = {};
-      if (!acc[district][municipality]) acc[district][municipality] = { mayorCandidates: [], deputyMayorCandidates: [] };
+      const { electionId, district, municipality } = candidate;
 
-      acc[district][municipality].mayorCandidates.push(...candidate.mayorCandidates);
-      acc[district][municipality].deputyMayorCandidates.push(...candidate.deputyMayorCandidates);
+      if (!acc[electionId]) {
+        acc[electionId] = {
+          electionId,
+          districts: {},
+        };
+      }
+
+      if (!acc[electionId].districts[district]) {
+        acc[electionId].districts[district] = {};
+      }
+
+      if (!acc[electionId].districts[district][municipality]) {
+        acc[electionId].districts[district][municipality] = {
+          mayorCandidates: [],
+          deputyMayorCandidates: [],
+        };
+      }
+
+      acc[electionId].districts[district][municipality].mayorCandidates.push(...candidate.mayorCandidates);
+      acc[electionId].districts[district][municipality].deputyMayorCandidates.push(...candidate.deputyMayorCandidates);
 
       return acc;
     }, {});
 
-  const groupedCandidates = groupCandidates(candidates);
+  const groupedCandidates = groupCandidatesByElectionId(candidates);
 
   if (loading || status === 'loading') return <div>Loading...</div>;
 
@@ -90,27 +128,39 @@ export default function CandidatePage() {
 
       {Object.keys(groupedCandidates).length > 0 ? (
         <div className="space-y-10">
-          {Object.entries(groupedCandidates).map(([district, municipalities]) => (
-            <div key={district} className="bg-gray-100 rounded-lg p-6 shadow-md border border-gray-300">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">{district}</h3>
+          {Object.entries(groupedCandidates).map(([electionId, { districts }]) => (
+            <div key={electionId} className="bg-gray-100 rounded-lg p-6 shadow-md border border-gray-300">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Election ID: {electionId}</h3>
 
-              {Object.entries(municipalities).map(([municipality, { mayorCandidates, deputyMayorCandidates }]) => (
-                <div key={municipality} className="bg-white p-4 rounded-lg mb-6">
-                  <h4 className="text-xl font-semibold text-gray-800 mb-4">{municipality}</h4>
+              {Object.entries(districts).map(([district, municipalities]) => (
+                <div key={district} className="mb-8">
+                  <h4 className="text-xl font-semibold text-gray-800 mb-4">District: {district}</h4>
 
-                  {/* Mayor Candidates */}
-                  <CandidateList
-                    title="Mayor Candidates"
-                    candidates={mayorCandidates}
-                    onDelete={(index) => handleDelete(district, municipality, 'mayorCandidates', index)}
-                  />
+                  {Object.entries(municipalities).map(([municipality, { mayorCandidates, deputyMayorCandidates }]) => (
+                    <div key={municipality} className="bg-white rounded-lg p-4 shadow-sm mb-6">
+                      <h5 className="text-lg font-semibold text-gray-700 mb-2">Municipality: {municipality}</h5>
 
-                  {/* Deputy Mayor Candidates */}
-                  <CandidateList
-                    title="Deputy Mayor Candidates"
-                    candidates={deputyMayorCandidates}
-                    onDelete={(index) => handleDelete(district, municipality, 'deputyMayorCandidates', index)}
-                  />
+                      <CandidateList
+                        title="Mayor Candidates"
+                        candidates={mayorCandidates}
+                        electionId={electionId}
+                        district={district}
+                        municipality={municipality}
+                        postType="mayorCandidates"
+                        onDelete={handleDelete}
+                      />
+
+                      <CandidateList
+                        title="Deputy Mayor Candidates"
+                        candidates={deputyMayorCandidates}
+                        electionId={electionId}
+                        district={district}
+                        municipality={municipality}
+                        postType="deputyMayorCandidates"
+                        onDelete={handleDelete}
+                      />
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
@@ -123,19 +173,19 @@ export default function CandidatePage() {
   );
 }
 
-function CandidateList({ title, candidates, onDelete }) {
+function CandidateList({ title, candidates, electionId, district, municipality, postType, onDelete }) {
   return (
     <div className="mb-6">
       <h5 className="text-lg font-semibold text-gray-800">{title}</h5>
       {candidates.length > 0 ? (
         <ul className="mt-2 space-y-2">
-          {candidates.map((candidate, index) => (
-            <li key={index} className="bg-gray-50 p-3 rounded-lg">
+          {candidates.map((candidate) => (
+            <li key={candidate._id} className="bg-gray-50 p-3 rounded-lg">
               <p className="text-gray-700">
                 <span className="font-semibold">Name:</span> {candidate.name}
               </p>
               <p className="text-gray-700">
-                <span className="font-semibold">Candidtae ID:</span> {candidate.candidateId}
+                <span className="font-semibold">Candidate ID:</span> {candidate.candidateId}
               </p>
               <p className="text-gray-700">
                 <span className="font-semibold">Party:</span> {candidate.party}
@@ -148,11 +198,12 @@ function CandidateList({ title, candidates, onDelete }) {
                   </button>
                 </Link>
                 <button
-                  onClick={() => onDelete(index)}
-                  className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300"
-                >
-                  Delete
-                </button>
+  onClick={() => onDelete(candidate._id)}
+  className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300"
+>
+  Delete
+</button>
+
               </div>
             </li>
           ))}

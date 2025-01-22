@@ -8,6 +8,7 @@ const voteSchema = new mongoose.Schema({
   deputyMayorId: { type: String, required: true },
   mayorParty: { type: String, required: true },
   deputyMayorParty: { type: String, required: true },
+  electionId: { type: String, required: true },  // Added electionId field
   timestamp: { type: Date, default: Date.now },
 });
 

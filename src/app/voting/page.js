@@ -4,19 +4,21 @@ import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import Router, { useRouter } from "next/navigation";
+
 export default function VotingPage() {
-  const { data: session,status } = useSession();
+  const { data: session, status } = useSession();
   const [selectedMayorParty, setSelectedMayorParty] = useState("");
   const [selectedDeputyParty, setSelectedDeputyParty] = useState("");
   const [selectedMayor, setSelectedMayor] = useState(null);
   const [selectedDeputy, setSelectedDeputy] = useState(null);
   const [candidatesData, setCandidatesData] = useState([]);
   const [isVoting, setIsVoting] = useState(false);
-  const router=useRouter()
+  const router = useRouter();
 
   const nationalId = session?.user?.nationalId || '';
   const district = session?.user?.district || '';
   const municipality = session?.user?.municipality || '';
+  const activeElection = session?.activeElection || null;
 
   useEffect(() => {
     const fetchCandidates = async () => {
@@ -55,30 +57,30 @@ export default function VotingPage() {
       setSelectedDeputy(deputy || null);
     }
   };
-
   const handleVote = async () => {
     if (!selectedMayor || !selectedDeputy) {
       toast.error("Please select both a Mayor and a Deputy Mayor.");
       return;
     }
-
-    if (!district || !municipality || !nationalId) {
+  
+    if (!district || !municipality || !nationalId || !activeElection?.electionId) {
       toast.error("Incomplete voter details. Please log in.");
       return;
     }
-
+  
     setIsVoting(true);
-
+  
     const voteData = {
       voterId: nationalId,
       district,
       municipality,
+      electionId: activeElection?.electionId || "", // Include the electionId
       mayorId: selectedMayor?.candidateId || "",
       deputyMayorId: selectedDeputy?.candidateId || "",
       mayorParty: selectedMayorParty || "",
       deputyMayorParty: selectedDeputyParty || "",
     };
-
+  
     try {
       const response = await axios.post('/api/vote', voteData);
       if (response.status === 200) {
@@ -92,28 +94,52 @@ export default function VotingPage() {
       setIsVoting(false);
     }
   };
+  
+
   if (status === 'loading') {
     return 'Loading...';
-}
+  }
 
-if (status === 'unauthenticated') {
-    
+  if (status === 'unauthenticated') {
     router.push('/login');
-    return null; // Prevent rendering anything while redirecting
-}
+    return null;
+  }
 
-if (!session?.user) {
-    return null; // Prevent errors if session or user is undefined
-}
+  if (!session?.user) {
+    return null;
+  }
 
   return (
     <div className="bg-gradient-to-r m-5 from-blue-50 to-blue-100 min-h-screen flex items-center justify-center p-6">
       <main className="bg-white shadow-2xl rounded-2xl w-full max-w-lg p-8">
         <Toaster />
+        {activeElection && (
+  <div className="mb-6 p-6 bg-gradient-to-r from-blue-300 to-blue-500 rounded-xl shadow-xl transform transition-transform hover:scale-105 duration-300 w-72 mx-auto">
+    <p className="text-white font-semibold text-center text-lg">
+      <strong className="text-2xl">Welcome to {activeElection.name}</strong>
+    </p>
+  </div>
+)}
+
+
         <h1 className="text-4xl font-extrabold text-center text-blue-700 mb-8">Cast Your Vote</h1>
         <p className="text-gray-600 text-center mb-6">
           Securely vote for your preferred Mayor and Deputy Mayor.
         </p>
+        {activeElection && (
+  <div className="mb-6">
+    <p className="text-gray-700">
+   
+      <strong>Election ID:</strong> 
+      <input
+        type="text"
+        value={activeElection.electionId}
+        readOnly
+        className="w-full bg-gray-100 text-gray-700 p-4 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-400"
+      />
+    </p>
+  </div>
+)}
 
         <div className="mb-6">
           <label className="block text-gray-700 font-medium mb-2">National ID</label>
@@ -133,6 +159,8 @@ if (!session?.user) {
             <strong>Municipality:</strong> {municipality || "Not available"}
           </p>
         </div>
+
+ 
 
         {filteredCandidates.length > 0 ? (
           <div className="space-y-8">

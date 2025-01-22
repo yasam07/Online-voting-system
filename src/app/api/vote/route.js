@@ -1,18 +1,17 @@
+// pages/api/vote.js
 import mongoose from 'mongoose';
-import { encryptVote } from '../../../libs/encryption';
+import { encryptFeistel } from '../../../libs/encryption';
 import Vote from '../../models/Vote';
 import CandidateVoteCount from '../../models/CandidateVoteCount';
 
-// MongoDB connection setup
 const connectMongo = async () => {
-  if (mongoose.connections[0].readyState) return;  // Skip if already connected
+  if (mongoose.connections[0].readyState) return;
   await mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
 };
 
-// POST request to submit a vote
 export async function POST(req) {
   await connectMongo();
 
@@ -25,10 +24,10 @@ export async function POST(req) {
       deputyMayorId,
       mayorParty,
       deputyMayorParty,
+      electionId,
     } = await req.json();
 
-    // Validate input fields
-    if (!voterId || !district || !municipality || !mayorId || !deputyMayorId || !mayorParty || !deputyMayorParty) {
+    if (!voterId || !district || !municipality || !mayorId || !deputyMayorId || !mayorParty || !deputyMayorParty || !electionId) {
       return new Response(
         JSON.stringify({ message: 'All fields are required' }),
         { status: 400 }
@@ -36,19 +35,20 @@ export async function POST(req) {
     }
 
     // Check if the voter has already voted
-    const existingVote = await Vote.findOne({ voterId });
+    const existingVote = await Vote.findOne({ voterId, electionId });
     if (existingVote) {
       return new Response(
-        JSON.stringify({ message: 'You have already submitted your vote.' }),
+        JSON.stringify({ message: 'You have already submitted your vote for this election.' }),
         { status: 400 }
       );
     }
 
-    // Encrypt the mayor and deputy mayor IDs before saving
-    const encryptedMayorId = encryptVote(mayorId);
-    const encryptedDeputyMayorId = encryptVote(deputyMayorId);
+    const key = 5; // Encryption key
 
-    // Create vote object with encrypted data
+    // Encrypt candidate IDs
+    const encryptedMayorId = encryptFeistel(mayorId.toString(), key);
+    const encryptedDeputyMayorId = encryptFeistel(deputyMayorId.toString(), key);
+
     const voteData = {
       voterId,
       district,
@@ -57,27 +57,18 @@ export async function POST(req) {
       deputyMayorId: encryptedDeputyMayorId,
       mayorParty,
       deputyMayorParty,
+      electionId,
       timestamp: new Date(),
     };
 
-    // Save the vote in the database
-    const result = await Vote.create(voteData);
+    // Save the vote and update vote counts
+    await Vote.create(voteData);
+    await updateVoteCount(encryptedMayorId, encryptedDeputyMayorId, electionId);
 
-    if (result) {
-      // Update the vote count for the mayor and deputy mayor
-      await updateVoteCount(mayorId, deputyMayorId);
-
-      return new Response(
-        JSON.stringify({ message: 'Vote submitted successfully' }),
-        { status: 200 }
-      );
-    } else {
-      return new Response(
-        JSON.stringify({ message: 'Error submitting vote. Please try again.' }),
-        { status: 500 }
-      );
-    }
-
+    return new Response(
+      JSON.stringify({ message: 'Vote submitted successfully' }),
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Error submitting vote:', error);
     return new Response(
@@ -87,26 +78,27 @@ export async function POST(req) {
   }
 }
 
-// Function to update the vote count for the mayor and deputy mayor
-const updateVoteCount = async (mayorId, deputyMayorId) => {
+// Function to update vote count
+const updateVoteCount = async (encryptedMayorId, encryptedDeputyMayorId, electionId) => {
   try {
-    // Find or create the vote count entry for the mayor and deputy mayor
-    const existingVoteCount = await CandidateVoteCount.findOne({ mayorId, deputyMayorId });
+    const voteCount = await CandidateVoteCount.findOne({
+      mayorId: encryptedMayorId,
+      deputyMayorId: encryptedDeputyMayorId,
+      electionId,
+    });
 
-    if (existingVoteCount) {
-      // Increment the vote counts
-      existingVoteCount.mayorVotes += 1;
-      existingVoteCount.deputyMayorVotes += 1;
-      await existingVoteCount.save();
+    if (voteCount) {
+      voteCount.mayorVotes += 1;
+      voteCount.deputyMayorVotes += 1;
+      await voteCount.save();
     } else {
-      // Create a new entry for the vote count
-      const newVoteCount = new CandidateVoteCount({
-        mayorId,
+      await CandidateVoteCount.create({
+        mayorId: encryptedMayorId,
         mayorVotes: 1,
-        deputyMayorId,
+        deputyMayorId: encryptedDeputyMayorId,
         deputyMayorVotes: 1,
+        electionId,
       });
-      await newVoteCount.save();
     }
   } catch (error) {
     console.error('Error updating vote count:', error);

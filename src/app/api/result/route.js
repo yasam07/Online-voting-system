@@ -1,22 +1,20 @@
-// src/app/api/result/route.js
+// pages/api/result.js
 import mongoose from 'mongoose';
-import CandidateVoteCount from '../../models/CandidateVoteCount'; 
-
+import CandidateVoteCount from '../../models/CandidateVoteCount';
+import { decryptFeistel } from '../../../libs/encryption';
 
 const connectMongo = async () => {
-  if (mongoose.connections[0].readyState) return;  
+  if (mongoose.connections[0].readyState) return;
   await mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
 };
 
-
-export async function GET(req) {
+export async function GET() {
   await connectMongo();
 
   try {
-  
     const voteCounts = await CandidateVoteCount.find();
 
     if (!voteCounts || voteCounts.length === 0) {
@@ -26,13 +24,19 @@ export async function GET(req) {
       );
     }
 
-    
-    const results = voteCounts.map((voteCount) => ({
-      mayorId: voteCount.mayorId,
-      mayorVotes: voteCount.mayorVotes,
-      deputyMayorId: voteCount.deputyMayorId,
-      deputyMayorVotes: voteCount.deputyMayorVotes,
-    }));
+    const key = 5;
+
+    const results = voteCounts.map((voteCount) => {
+      const decryptedMayorId = decryptFeistel(voteCount.mayorId, key);
+      const decryptedDeputyMayorId = decryptFeistel(voteCount.deputyMayorId, key);
+
+      return {
+        mayorId: decryptedMayorId,
+        mayorVotes: voteCount.mayorVotes,
+        deputyMayorId: decryptedDeputyMayorId,
+        deputyMayorVotes: voteCount.deputyMayorVotes,
+      };
+    });
 
     return new Response(
       JSON.stringify(results),

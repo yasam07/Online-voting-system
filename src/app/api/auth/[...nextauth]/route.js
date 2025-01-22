@@ -4,6 +4,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "../../../../libs/mongoConnects";
 import { User } from "../../../models/voter";
+
+import Election from "../../../models/Election"; // Correct for default export
+// Import Election model
 import bcrypt from "bcryptjs";
 
 const connectToDatabase = async () => {
@@ -39,16 +42,25 @@ export const authOptions = {
 
           await connectToDatabase();
 
+          // Find the user by National ID
           const user = await User.findOne({ nationalId });
           if (!user) {
             throw new Error("User not found.");
           }
 
+          // Validate password
           const passwordValid = await bcrypt.compare(password, user.password);
           if (!passwordValid) {
             throw new Error("Invalid credentials.");
           }
 
+          // Find the active election (if any)
+          const currentTime = new Date();
+          const activeElection = await Election.findOne({
+            startTime: { $lte: currentTime },
+            endTime: { $gte: currentTime },
+          }).lean();
+        
           return {
             id: user._id.toString(),
             fullName: user.fullName,
@@ -56,6 +68,7 @@ export const authOptions = {
             district: user.district,
             municipality: user.municipality,
             admin: user.admin,
+            activeElection: activeElection || null, // Attach active election data
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -77,6 +90,7 @@ export const authOptions = {
         token.district = user.district;
         token.municipality = user.municipality;
         token.admin = user.admin;
+        token.activeElection = user.activeElection; // Add active election to JWT
       }
       return token;
     },
@@ -89,6 +103,7 @@ export const authOptions = {
         municipality: token.municipality,
         admin: token.admin,
       };
+      session.activeElection = token.activeElection; // Add active election to session
       return session;
     },
   },

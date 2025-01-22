@@ -3,8 +3,10 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+
 export default function CreateCandidatePage() {
   const [form, setForm] = useState({
+    electionId: '',
     district: '',
     municipality: '',
     mayorCandidates: [],
@@ -55,65 +57,95 @@ export default function CreateCandidatePage() {
   };
 
   const validateCandidates = () => {
-    // Check for duplicate parties in mayor candidates
     const mayorParties = new Set();
     for (const candidate of form.mayorCandidates) {
       if (candidate.party && mayorParties.has(candidate.party)) {
         toast.error(`${candidate.party} can't have more than one mayor candidate`);
-        return false; // Return false if there's a duplicate in mayor candidates
+        return false;
       }
       if (candidate.party) {
         mayorParties.add(candidate.party);
       }
     }
-  
-    // Check for duplicate parties in deputy mayor candidates
+
     const deputyMayorParties = new Set();
     for (const candidate of form.deputyMayorCandidates) {
       if (candidate.party && deputyMayorParties.has(candidate.party)) {
-        toast.error(`${candidate.party} can't have more than  one deputy mayor candidate .`);
-        return false; // Return false if there's a duplicate in deputy mayor candidates
+        toast.error(`${candidate.party} can't have more than one deputy mayor candidate.`);
+        return false;
       }
       if (candidate.party) {
         deputyMayorParties.add(candidate.party);
       }
     }
-  
-    return true; // If no duplicates found, return true
+
+    return true;
   };
-  
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate candidates before submitting
     if (!validateCandidates()) return;
 
-    const response = await fetch('/api/candidates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    try {
+      // Fetch elections data
+      const electionResponse = await fetch('/api/elections');
+      if (!electionResponse.ok) {
+        toast.error('Failed to fetch election data');
+        return;
+      }
 
-    if (response.ok) {
-      toast.success('Candidates created!');
-      router.push('/candidates');
-    } else {
-      const errorData = await response.json();
-      toast.error(errorData.message || 'Failed to create candidates.');
+      const data = await electionResponse.json();
+      console.log('Fetched Elections Data:', data);  // Log data to debug
+
+      const elections = data.elections || [];
+
+      if (!Array.isArray(elections)) {
+        toast.error('Election data is invalid.');
+        return;
+      }
+
+      const sanitizedElectionId = form.electionId.trim();
+
+      // Check if the election ID exists in the elections data
+      const electionExists = elections.some(
+        (election) => election.electionId.trim() === sanitizedElectionId
+      );
+
+      if (!electionExists) {
+        toast.error('Election ID does not exist.');
+        return;
+      }
+
+      // Proceed to create the candidate
+      const response = await fetch('/api/candidates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      if (response.ok) {
+        toast.success('Candidates created!');
+        router.push('/candidates');
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || 'Failed to create candidates.');
+      }
+    } catch (error) {
+      toast.error('An error occurred while submitting the form.');
+      console.error(error);
     }
   };
+
   if (status === 'loading') {
     return <div>Loading...</div>;
   }
 
   if (status === 'unauthenticated') {
     router.push('/login');
-    return null; // Prevent rendering anything while redirecting
+    return null;
   }
 
-  // Check for admin privileges
   const isAdmin = session?.user?.admin;
 
   if (!isAdmin) {
@@ -127,6 +159,19 @@ export default function CreateCandidatePage() {
       </h1>
 
       <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg px-8 py-10 space-y-6">
+        {/* Election ID Input */}
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2">Election ID</label>
+          <input
+            type="text"
+            value={form.electionId}
+            onChange={(e) => setForm({ ...form, electionId: e.target.value })}
+            placeholder="Enter Election ID"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            required
+          />
+        </div>
+
         {/* District Selection */}
         <div>
           <label className="block text-gray-700 font-semibold mb-2">District</label>
@@ -136,7 +181,7 @@ export default function CreateCandidatePage() {
               setForm({
                 ...form,
                 district: e.target.value,
-                municipality: '', // Reset municipality on district change
+                municipality: '',
               })
             }
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
@@ -169,7 +214,7 @@ export default function CreateCandidatePage() {
           </select>
         </div>
 
-        {/* Candidates Section (Mayor and Deputy Mayor) */}
+        {/* Candidates Section */}
         {['mayorCandidates', 'deputyMayorCandidates'].map((postType) => (
           <div key={postType}>
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">

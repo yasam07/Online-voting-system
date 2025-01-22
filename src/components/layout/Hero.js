@@ -8,6 +8,7 @@ export default function Hero() {
   const { data: session, status } = useSession();
 
   const nationalId = session?.user?.nationalId || '';
+  const activeElection = session?.activeElection || null;
 
   return (
     <section className="hero mt-4">
@@ -26,6 +27,25 @@ export default function Hero() {
           Voting is the power to shape the future, a simple yet significant choice in life.
         </p>
 
+        {/* Display Active Election Details */}
+        {activeElection ? (
+  <div
+    className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-lg shadow-lg p-4 mb-4 text-center transition-transform transform hover:scale-105 animate-fadeIn max-w-xs mx-auto"
+  >
+    <h2 className="text-lg font-extrabold">
+      Welcome to the {activeElection.name } !
+    </h2>
+  </div>
+) : (
+  <div
+    className="bg-gradient-to-r from-blue-500 via-teal-400 to-green-500 text-white rounded-lg shadow-lg p-4 mb-4 text-center animate-fadeIn max-w-xs mx-auto"
+  >
+    <p className="text-md font-semibold">No election running at the moment.</p>
+  </div>
+)}
+
+
+
         <div className="flex gap-4 text-sm">
           {nationalId && (
             <Link href="/voting">
@@ -35,7 +55,7 @@ export default function Hero() {
               </button>
             </Link>
           )}
-             {!nationalId && (
+          {!nationalId && (
             <Link href="/login">
               <button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold uppercase flex gap-2 px-7 py-3 rounded-full items-center shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 Go for Voting

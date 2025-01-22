@@ -48,9 +48,13 @@ export default function Header() {
         <nav className="flex items-center gap-4 text-gray-500">
           {status === 'authenticated' && (
             <>
-      <div className="flex items-center px-1 bg-gray-50 rounded-lg shadow-sm text-lg font-semibold text-gray-800">
+<Link
+  href={'/profile'}
+  className="flex items-center px-1  bg-gray-50 rounded-lg shadow-sm text-lg font-semibold text-gray-800 cursor-pointer hover:bg-gray-100 hover:shadow-md transition-all duration-300"
+>
   Hey, {userName}!
-</div>
+</Link>
+
 
 
 {isAdmin&&(
