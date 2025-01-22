@@ -62,76 +62,44 @@ export async function POST(req) {
       );
     }
 
-    const existingCandidates = await Candidate.findOne({
-      electionId,
-      district,
-      municipality,
-    });
+    // Step 1: Check for duplicate candidateId across the entire Candidate model
+    const allCandidates = [...mayorCandidates, ...deputyMayorCandidates];
 
-    if (existingCandidates) {
-      const existingMayorParties = existingCandidates.mayorCandidates.map(
-        (c) => c.party
-      );
-      const existingDeputyMayorParties =
-        existingCandidates.deputyMayorCandidates.map((c) => c.party);
+    const candidateIds = allCandidates.map((candidate) => candidate.candidateId);
 
-      // Check for duplicate mayor party
-      const mayorParties = mayorCandidates.map((c) => c.party);
-      const duplicateMayorParties = mayorParties.filter((party) =>
-        existingMayorParties.includes(party)
+    const duplicateCandidateIds = candidateIds.filter(
+      (value, index, self) => self.indexOf(value) !== index
+    );
+
+    if (duplicateCandidateIds.length > 0) {
+      return new Response(
+        JSON.stringify({
+          message: `Duplicate candidateId detected: '${duplicateCandidateIds[0]}'. Candidate IDs must be unique across all candidates.`,
+        }),
+        { status: 400 }
       );
-      if (duplicateMayorParties.length > 0) {
+    }
+
+    // Step 2: Check if any candidateId already exists in the entire Candidate collection (not just the current election, district, or municipality)
+    for (const candidateId of candidateIds) {
+      const existingCandidate = await Candidate.findOne({
+        $or: [
+          { 'mayorCandidates.candidateId': candidateId },
+          { 'deputyMayorCandidates.candidateId': candidateId },
+        ],
+      });
+
+      if (existingCandidate) {
         return new Response(
           JSON.stringify({
-            message: `Party '${duplicateMayorParties[0]}' already has a candidate for mayor in ${municipality}.`,
-          }),
-          { status: 400 }
-        );
-      }
-
-      // Check for duplicate deputy mayor party
-      const deputyMayorParties = deputyMayorCandidates.map((c) => c.party);
-      const duplicateDeputyMayorParties = deputyMayorParties.filter((party) =>
-        existingDeputyMayorParties.includes(party)
-      );
-      if (duplicateDeputyMayorParties.length > 0) {
-        return new Response(
-          JSON.stringify({
-            message: `Party '${duplicateDeputyMayorParties[0]}' already has a candidate for deputy mayor in ${municipality}.`,
-          }),
-          { status: 400 }
-        );
-      }
-
-      // Check for conflicting candidates
-      const conflictingMayorParties = mayorParties.filter(
-        (party) =>
-          mayorCandidates.filter((c) => c.party === party).length > 1
-      );
-      if (conflictingMayorParties.length > 0) {
-        return new Response(
-          JSON.stringify({
-            message: `Party '${conflictingMayorParties[0]}' cannot have multiple candidates for mayor.`,
-          }),
-          { status: 400 }
-        );
-      }
-
-      const conflictingDeputyMayorParties = deputyMayorParties.filter(
-        (party) =>
-          deputyMayorCandidates.filter((c) => c.party === party).length > 1
-      );
-      if (conflictingDeputyMayorParties.length > 0) {
-        return new Response(
-          JSON.stringify({
-            message: `Party '${conflictingDeputyMayorParties[0]}' cannot have multiple candidates for deputy mayor.`,
+            message: `Candidate ID '${candidateId}' already exists in the database for another candidate.`,
           }),
           { status: 400 }
         );
       }
     }
 
-    // Create a new candidate document
+    // Step 3: Create a new candidate document
     const newCandidate = new Candidate({
       electionId,
       district,

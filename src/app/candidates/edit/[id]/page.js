@@ -48,25 +48,27 @@ export default function EditCandidatePage({ params }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await fetch(`/api/candidates/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidateData),
       });
-
+  
       if (!response.ok) {
-        throw new Error('Failed to update candidate');
+        const errorData = await response.json(); // Get error details from the server
+        throw new Error(errorData.error || 'Failed to update candidate'); // Display the server error or a default message
       }
-
+  
       toast.success('Candidate updated successfully');
       router.push('/candidates'); // Redirect to the candidates list or another page
     } catch (error) {
       console.error('Error updating candidate:', error);
-      toast.error(error.message);
+      toast.error(error.message); // Display the error in a toast
     }
   };
+  
 
   if (loading) return <div>Loading...</div>;
   if (!candidateData) return <div>No candidate data found</div>;

@@ -35,31 +35,128 @@ export async function PUT(req, { params }) {
   try {
     await connectToDatabase();
 
-    const updatedData = await req.json(); // Parse the updated data from the request body
+    const { name, candidateId, party } = await req.json();
 
-    // Attempt to update the candidate in both arrays
+    if (!candidateId || !name || !party) {
+      return NextResponse.json(
+        { error: 'Name, candidateId, and party are required.' },
+        { status: 400 }
+      );
+    }
+
+    // Step 1: Find the document containing the candidate and the municipality
+    const candidateDocument = await Candidate.findOne({
+      $or: [
+        { 'mayorCandidates._id': id },
+        { 'deputyMayorCandidates._id': id },
+      ],
+    });
+
+    if (!candidateDocument) {
+      return NextResponse.json(
+        { error: 'Candidate not found.' },
+        { status: 404 }
+      );
+    }
+
+    const { municipality } = candidateDocument;
+
+    // Step 2: Check for duplicate candidateId across all municipalities
+    const duplicateCandidateId = await Candidate.findOne({
+      $or: [
+        {
+          'mayorCandidates.candidateId': candidateId,
+          'mayorCandidates._id': { $ne: id }, // Exclude the current candidate
+        },
+        {
+          'deputyMayorCandidates.candidateId': candidateId,
+          'deputyMayorCandidates._id': { $ne: id }, // Exclude the current candidate
+        },
+      ],
+    });
+
+    if (duplicateCandidateId) {
+      return NextResponse.json(
+        { error: `A candidate with candidateId "${candidateId}" already exists.` },
+        { status: 400 }
+      );
+    }
+
+    // Step 3: Check for duplicate party in the mayorCandidates array
+    const isMayorCandidate = candidateDocument.mayorCandidates.some(
+      (candidate) => candidate._id.toString() === id
+    );
+
+    if (isMayorCandidate) {
+      const duplicateMayorParty = await Candidate.findOne({
+        municipality,
+        'mayorCandidates.party': party,
+        'mayorCandidates._id': { $ne: id }, // Exclude the current candidate
+      });
+
+      if (duplicateMayorParty) {
+        return NextResponse.json(
+          { error: `A mayor candidate with party "${party}" already exists in municipality "${municipality}".` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Step 4: Check for duplicate party in the deputyMayorCandidates array
+    const isDeputyMayorCandidate = candidateDocument.deputyMayorCandidates.some(
+      (candidate) => candidate._id.toString() === id
+    );
+
+    if (isDeputyMayorCandidate) {
+      const duplicateDeputyMayorParty = await Candidate.findOne({
+        municipality,
+        'deputyMayorCandidates.party': party,
+        'deputyMayorCandidates._id': { $ne: id }, // Exclude the current candidate
+      });
+
+      if (duplicateDeputyMayorParty) {
+        return NextResponse.json(
+          { error: `A deputy mayor candidate with party "${party}" already exists in municipality "${municipality}".` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Step 5: Update the candidate in the respective array
     const updatedMayor = await Candidate.findOneAndUpdate(
       { 'mayorCandidates._id': id },
-      { $set: { 'mayorCandidates.$': updatedData } },
+      {
+        $set: {
+          'mayorCandidates.$.name': name,
+          'mayorCandidates.$.candidateId': candidateId,
+          'mayorCandidates.$.party': party,
+        },
+      },
       { new: true, runValidators: true }
     );
 
     if (updatedMayor) {
       return NextResponse.json(
-        { message: 'Candidate updated successfully', candidate: updatedMayor },
+        { message: 'Mayor candidate updated successfully', candidate: updatedMayor },
         { status: 200 }
       );
     }
 
     const updatedDeputyMayor = await Candidate.findOneAndUpdate(
       { 'deputyMayorCandidates._id': id },
-      { $set: { 'deputyMayorCandidates.$': updatedData } },
+      {
+        $set: {
+          'deputyMayorCandidates.$.name': name,
+          'deputyMayorCandidates.$.candidateId': candidateId,
+          'deputyMayorCandidates.$.party': party,
+        },
+      },
       { new: true, runValidators: true }
     );
 
     if (updatedDeputyMayor) {
       return NextResponse.json(
-        { message: 'Candidate updated successfully', candidate: updatedDeputyMayor },
+        { message: 'Deputy mayor candidate updated successfully', candidate: updatedDeputyMayor },
         { status: 200 }
       );
     }
@@ -74,11 +171,6 @@ export async function PUT(req, { params }) {
   }
 }
 
-// DELETE handler for deleting a candidate
-
-
-
-// GET handler for retrieving a candidate
 export async function GET(req, { params }) {
   const { id } = params;
   console.log(id)
