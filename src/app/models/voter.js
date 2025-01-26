@@ -8,10 +8,6 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
-    phoneNumber: { // Replacing email with phoneNumber
-      type: String,
-      required: true,
-    },
     fatherName: {
       type: String,
       required: true,
@@ -28,6 +24,12 @@ const UserSchema = new Schema(
       type: String,
       enum: ['Male', 'Female', 'Other'],
       required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      match: [/\S+@\S+\.\S+/, 'Please provide a valid email address'],
     },
     password: {
       type: String,

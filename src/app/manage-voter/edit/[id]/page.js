@@ -1,145 +1,158 @@
 "use client";
-import { useState, useEffect } from "react";
-import Link from "next/link";
 
-export default function RegisterPage() {
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+
+export default function EditVoterPage() {
+  const router = useRouter();
+  const { id } = useParams(); // Get the voter ID from the route
+
   const [fullName, setFullName] = useState("");
   const [fatherName, setFatherName] = useState("");
-  const [email, setEmail] = useState(""); // Updated to email
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [nationalId, setNationalId] = useState("");
   const [district, setDistrict] = useState("");
   const [municipality, setMunicipality] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [gender, setGender] = useState("");
   const [districtsData, setDistrictsData] = useState([]);
-  const [creatingUser, setCreatingUser] = useState(false);
-  const [userCreated, setUserCreated] = useState(false);
-  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  // Fetch District data from JSON file
+  // Fetch districts data
   useEffect(() => {
     async function fetchDistrictData() {
       try {
         const response = await fetch("/District.json");
         const data = await response.json();
+        console.log("District Data Loaded:", data); // Log district data for verification
         setDistrictsData(data);
-      } catch (error) {
-        console.error("Error fetching district data:", error);
+      } catch (err) {
+        console.error("Error fetching district data:", err);
+        setError("Failed to load district data.");
       }
     }
     fetchDistrictData();
   }, []);
 
+  // Filter municipalities based on the selected district
   const municipalities =
     districtsData.find((d) => d.name === district)?.municipalities || [];
 
+  // Fetch voter data for editing
+  useEffect(() => {
+    async function fetchVoterData() {
+      try {
+        const response = await fetch(`/api/manage-voter/${id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch voter data.");
+        }
+        const data = await response.json();
+        console.log("Voter Data:", data); // Log the voter data for debugging
+        const voter = data.voter;
+        setFullName(voter.fullName || "");
+        setFatherName(voter.fatherName || "");
+        setPhoneNumber(voter.phoneNumber || "");
+        setNationalId(voter.nationalId || "");
+        setDistrict(voter.district || "");
+        setMunicipality(voter.municipality || ""); // Set municipality if available
+        setDateOfBirth(voter.dateOfBirth ? voter.dateOfBirth.split("T")[0] : "");
+        setGender(voter.gender || "");
+      } catch (err) {
+        setError(err.message || "An error occurred.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchVoterData();
+  }, [id]);
+
+  // Handle form submission
   async function handleFormSubmit(ev) {
     ev.preventDefault();
-    setCreatingUser(true);
+    setSaving(true);
     setError("");
-    setUserCreated(false);
 
     if (
       !fullName ||
-      !email || // Updated validation to check for email
+      !phoneNumber ||
       !fatherName ||
       !nationalId ||
       !dateOfBirth ||
       !gender ||
-      !password ||
-      !confirmPassword ||
       !district ||
       !municipality
     ) {
       setError("Please fill out all fields.");
-      setCreatingUser(false);
+      setSaving(false);
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      setCreatingUser(false);
-      return;
-    }
+    try {
+      const response = await fetch(`/api/manage-voter/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          fullName,
+          phoneNumber,
+          fatherName,
+          nationalId,
+          dateOfBirth: new Date(dateOfBirth), // Convert to Date object
+          gender,
+          district,
+          municipality,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
 
-    const response = await fetch("/api/register", {
-      method: "POST",
-      body: JSON.stringify({
-        fullName,
-        email, // Updated to send email instead of phoneNumber
-        fatherName,
-        nationalId,
-        dateOfBirth,
-        gender,
-        password,
-        district,
-        municipality,
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
+      if (!response.ok) {
+        throw new Error("Failed to update voter.");
+      }
 
-    if (response.ok) {
-      setUserCreated(true);
-    } else {
-      setError("An error occurred. Please try again.");
+      router.push("/manage-voter"); // Redirect to the Manage Voter page
+    } catch (err) {
+      setError(err.message || "An error occurred while saving.");
+    } finally {
+      setSaving(false);
     }
-    setCreatingUser(false);
+  }
+
+  // Handle Cancel button click
+  function handleCancel() {
+    router.push("/manage-voter"); // Redirect to the Manage Voter page
+  }
+
+  // Display loading state
+  if (loading) {
+    return <p className="text-center text-gray-600">Loading voter data...</p>;
+  }
+
+  // Display error state
+  if (error) {
+    return <p className="text-center text-red-600">Error: {error}</p>;
   }
 
   return (
     <div>
       <section className="mt-8">
-        <h1 className="text-center text-primary text-4xl my-4">Register</h1>
-
-        {userCreated && (
-          <div className="my-4 text-center">
-            User created.
-            <br />
-            Now you can{" "}
-            <Link className="underline" href={"/login"}>
-              login &raquo;
-            </Link>
-          </div>
-        )}
-
-        {error && (
-          <div className="my-4 text-center">
-            {typeof error === "string" ? error : "An error occurred!!"}
-            <br />
-            Please enter your correct data...
-          </div>
-        )}
+        <h1 className="text-center text-primary text-4xl my-4">Edit Voter</h1>
 
         <form
           className="block max-w-md mx-auto bg-gradient-to-br from-gray-50 to-white p-8 rounded-2xl shadow-lg border border-gray-200"
           onSubmit={handleFormSubmit}
         >
           <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-            Create Your Account
+            Update Voter Information
           </h2>
 
           {/* Full Name */}
           <div className="mb-6">
             <input
               type="text"
-              disabled={creatingUser}
               placeholder="Full Name"
               value={fullName}
               onChange={(ev) => setFullName(ev.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Email */}
-          <div className="mb-6">
-            <input
-              type="email"
-              disabled={creatingUser}
-              placeholder="Email"
-              value={email}
-              onChange={(ev) => setEmail(ev.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -148,10 +161,20 @@ export default function RegisterPage() {
           <div className="mb-6">
             <input
               type="text"
-              disabled={creatingUser}
               placeholder="Father's Name"
               value={fatherName}
               onChange={(ev) => setFatherName(ev.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Phone Number"
+              value={phoneNumber}
+              onChange={(ev) => setPhoneNumber(ev.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -160,7 +183,6 @@ export default function RegisterPage() {
           <div className="mb-6">
             <input
               type="text"
-              disabled={creatingUser}
               placeholder="National ID"
               value={nationalId}
               onChange={(ev) => setNationalId(ev.target.value)}
@@ -172,8 +194,6 @@ export default function RegisterPage() {
           <div className="mb-6">
             <input
               type="date"
-              disabled={creatingUser}
-              placeholder="Date of Birth"
               value={dateOfBirth}
               onChange={(ev) => setDateOfBirth(ev.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -183,7 +203,6 @@ export default function RegisterPage() {
           {/* Gender */}
           <div className="mb-6">
             <select
-              disabled={creatingUser}
               value={gender}
               onChange={(ev) => setGender(ev.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -197,36 +216,15 @@ export default function RegisterPage() {
             </select>
           </div>
 
-          {/* Password */}
-          <div className="mb-6">
-            <input
-              type="password"
-              disabled={creatingUser}
-              placeholder="Password"
-              value={password}
-              onChange={(ev) => setPassword(ev.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Confirm Password */}
-          <div className="mb-6">
-            <input
-              type="password"
-              disabled={creatingUser}
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(ev) => setConfirmPassword(ev.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
           {/* District */}
           <div className="mb-6">
             <select
-              disabled={creatingUser}
               value={district}
-              onChange={(ev) => setDistrict(ev.target.value)}
+              onChange={(ev) => {
+                setDistrict(ev.target.value);
+                setMunicipality(""); // Reset municipality when district changes
+                console.log('Selected District:', ev.target.value); // Debug log
+              }}
               className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
               <option value="" disabled>
@@ -243,10 +241,10 @@ export default function RegisterPage() {
           {/* Municipality */}
           <div className="mb-6">
             <select
-              disabled={creatingUser || !district}
               value={municipality}
               onChange={(ev) => setMunicipality(ev.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              disabled={!district}
             >
               <option value="" disabled>
                 Select Municipality
@@ -259,25 +257,25 @@ export default function RegisterPage() {
             </select>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
-            disabled={creatingUser}
+            disabled={saving}
             className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:bg-gray-300"
           >
-            {creatingUser ? "Creating Account..." : "Register"}
+            {saving ? "Saving Changes..." : "Save Changes"}
           </button>
 
-          <div className="my-6 text-center text-gray-600 border-t pt-6">
-            Already have an account?{" "}
-            <Link
-              className="underline text-blue-500 hover:text-blue-700"
-              href={"/login"}
-            >
-              Login here
-            </Link>
-          </div>
+          {/* Cancel Button */}
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="w-full mt-4 bg-gray-500 text-white py-3 rounded-lg font-semibold shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          >
+            Cancel
+          </button>
         </form>
-      </section>/g
+      </section>
     </div>
   );
 }

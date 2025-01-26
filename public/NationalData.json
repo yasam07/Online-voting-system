@@ -45,7 +45,7 @@
     "fatherName": "Father22",
     "dateOfBirth": "2000-01-01",
     "gender": "Male",
-    "phonenumber":"9822",
+
     "nationalId": "22",
     "district": "Bhaktapur",
     "municipality": "Madhyapur Thimi",
@@ -63,13 +63,13 @@
     "ward": "1"
   },
   {
-    "fullName": "san777",
-    "fatherName": "Father2",
-    "dateOfBirth": "1995-02-14",
+    "fullName": "test6",
+    "fatherName": "Father6",
+    "dateOfBirth": "2006-06-06",
     "gender": "Male",
 
     "password": "$2a$10$S7F1Zh0Qq5bhAXqkA54ekOuCV1htV4DW15kdFmp1Az9ZXyYsZnQ2i",
-    "nationalId": "12345678",
+    "nationalId": "6",
     "district": "Kathmandu",
     "municipality": "Kathmandu Metropolitan",
     "ward": "2"
@@ -85,5 +85,17 @@
     "district": "Bhaktapur",
     "municipality": "Madhyapur Thimi",
     "ward": "1"
+  },
+  {
+    "fullName": "test7",
+    "fatherName": "Father7",
+    "dateOfBirth": "2007-07-07",
+    "gender": "Male",
+
+    "password": "$2a$10$S7F1Zh0Qq5bhAXqkA54ekOuCV1htV4DW15kdFmp1Az9ZXyYsZnQ2i",
+    "nationalId": "7",
+    "district": "Kathmandu",
+    "municipality": "Kathmandu Metropolitan",
+    "ward": "2"
   }
 ]

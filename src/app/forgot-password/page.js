@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 export default function ForgotPasswordPage() {
   const [nationalId, setNationalId] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -18,10 +18,10 @@ export default function ForgotPasswordPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post('/api/forgot-password', { nationalId, phoneNumber });
+      const response = await axios.post('/api/forgot-password', { nationalId, email });
 
       if (response.data.success) {
-        toast.success('OTP sent to your phone number!');
+        toast.success('OTP sent to your email!');
         router.push('/verify-otp'); // Redirect to an OTP verification page (if applicable)
       } else {
         toast.error(response.data.message || 'User not found');
@@ -48,11 +48,11 @@ export default function ForgotPasswordPage() {
           className="w-full p-2 mb-4 border border-gray-300 rounded"
         />
         <input
-          type="tel"
-          name="phoneNumber"
-          placeholder="Enter your Phone Number"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
+          type="email"
+          name="email"
+          placeholder="Enter your Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           disabled={isSubmitting}
           className="w-full p-2 mb-4 border border-gray-300 rounded"
         />

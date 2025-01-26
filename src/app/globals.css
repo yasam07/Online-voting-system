@@ -11,10 +11,10 @@ section.hero {
   @apply block w-full mb-2 rounded-xl;
   @apply  border p-2 border-gray-500 bg-gray-200;
 } */
-button,.button{
+/* button,.button{
   @apply flex w-full text-gray-700 justify-center gap-2 font-semibold;
   @apply border border-gray-300  rounded-xl px-6 py-2;
-}
+} */
 button[type="submit"],.submit{
   @apply border-primary bg-primary text-white;
 }

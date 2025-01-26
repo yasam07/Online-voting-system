@@ -93,15 +93,14 @@ export async function POST(req) {
 export async function GET(req) {
   try {
     await connectToDatabase();
-
-    const elections = await Election.find(); // Fetch all elections from the database
-
+    const elections = await Election.find(); 
     return new Response(JSON.stringify({ elections }), { status: 200 });
   } catch (error) {
-    console.error('Error fetching elections:', error);
+    console.error('Error fetching elections:', error.message);  // More detailed logging
     return new Response(
       JSON.stringify({ error: 'Failed to fetch elections.' }),
       { status: 500 }
     );
   }
 }
+

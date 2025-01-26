@@ -1,31 +1,31 @@
 import { User } from '../../models/voter'; // Your voter model
 import mongoose from 'mongoose';
 import crypto from 'crypto';
-import { sendOtpSms } from '../../../libs/sms'; // Utility to send OTP via SMS
+import { sendOtpEmail } from '../../../libs/sms'; // Utility to send OTP via email
 
 export async function POST(req) {
   try {
     // Parse the request body
-    const { nationalId, phoneNumber } = await req.json();
-
-    if (!nationalId || !phoneNumber) {
+    const { nationalId, email } = await req.json();
+  
+    if (!nationalId || !email) {
       return new Response(
-        JSON.stringify({ error: 'National ID and Phone Number are required' }),
+        JSON.stringify({ error: 'National ID and Email are required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
-
+   
     // Ensure MongoDB connection is established
     if (!mongoose.connection.readyState) {
       await mongoose.connect(process.env.MONGO_URL);
     }
 
-    // Check if user with the provided nationalId and phoneNumber exists
-    const user = await User.findOne({ nationalId, phoneNumber });
+    // Check if user with the provided nationalId and email exists
+    const user = await User.findOne({ nationalId, email });
 
     if (!user) {
       return new Response(
-        JSON.stringify({ error: 'No user found with the provided National ID and Phone Number' }),
+        JSON.stringify({ error: 'No user found with the provided National ID and Email' }),
         { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -38,11 +38,12 @@ export async function POST(req) {
     user.resetOtpExpires = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
     await user.save();
 
-    // Send the OTP to the user's phone number
-    await sendOtpSms(phoneNumber, otp); // Utility function to send SMS
+
+    
+    await sendOtpEmail(email, otp);
 
     return new Response(
-      JSON.stringify({ success: true, message: 'OTP sent to your phone number' }),
+      JSON.stringify({ success: true, message: 'OTP sent to your email address' }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
@@ -53,4 +54,3 @@ export async function POST(req) {
     );
   }
 }
-

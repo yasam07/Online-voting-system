@@ -1,10 +1,11 @@
+// models/Election.js
 import mongoose from 'mongoose';
 
 const electionSchema = new mongoose.Schema({
   electionId: {
     type: String,
     required: true,
-    unique: true, // Ensures that electionId is unique
+    unique: true,
   },
   name: {
     type: String,
@@ -18,9 +19,17 @@ const electionSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  district: {
+    type: String,
+    required: false,
+  },
+  municipality: {
+    type: String,
+    required: false,
+  },
+  disabledMunicipalities: { type: [String], default: [],required:false },
 });
 
-// Use existing model if already defined, otherwise create a new one
 const Election = mongoose.models.Election || mongoose.model('Election', electionSchema);
 
 export default Election;

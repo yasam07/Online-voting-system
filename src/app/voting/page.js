@@ -12,6 +12,7 @@ export default function VotingPage() {
   const [selectedMayor, setSelectedMayor] = useState(null);
   const [selectedDeputy, setSelectedDeputy] = useState(null);
   const [candidatesData, setCandidatesData] = useState([]);
+  const [electionsData, setElectionsData] = useState([]);
   const [isVoting, setIsVoting] = useState(false);
   const router = useRouter();
 
@@ -31,8 +32,38 @@ export default function VotingPage() {
         toast.error("Failed to fetch candidates.");
       }
     };
+
+    const fetchElections = async () => {
+      try {
+        const response = await axios.get('/api/elections');
+        const elections = response.data.elections || []; // Access the elections array
+
+        // Ensure elections is an array before calling .find
+        if (Array.isArray(elections)) {
+          const election = elections.find(election => election.electionId === session?.activeElection?.electionId);
+          console.log(election);
+          if (election) {
+            setElectionsData([election]);
+
+            // Check if the municipality is in the disabledMunicipalities
+            if (election.disabledMunicipalities.includes(municipality)) {
+              toast.error("Voting is disabled in your municipality.");
+              router.push('/');
+            }
+          }
+        } else {
+          console.error("Elections data is not an array", elections);
+          toast.error("Failed to fetch valid elections data.");
+        }
+      } catch (error) {
+        console.error("Error fetching elections:", error);
+        toast.error("Failed to fetch elections.");
+      }
+    };
+
     fetchCandidates();
-  }, []);
+    fetchElections();
+  }, [session?.activeElection?.electionId, municipality]);
 
   const normalizeString = (str) => str?.trim().toLowerCase() || '';
 
@@ -57,19 +88,20 @@ export default function VotingPage() {
       setSelectedDeputy(deputy || null);
     }
   };
+
   const handleVote = async () => {
     if (!selectedMayor || !selectedDeputy) {
       toast.error("Please select both a Mayor and a Deputy Mayor.");
       return;
     }
-  
+
     if (!district || !municipality || !nationalId || !activeElection?.electionId) {
       toast.error("Incomplete voter details. Please log in.");
       return;
     }
-  
+
     setIsVoting(true);
-  
+
     const voteData = {
       voterId: nationalId,
       district,
@@ -80,7 +112,7 @@ export default function VotingPage() {
       mayorParty: selectedMayorParty || "",
       deputyMayorParty: selectedDeputyParty || "",
     };
-  
+
     try {
       const response = await axios.post('/api/vote', voteData);
       if (response.status === 200) {
@@ -94,7 +126,6 @@ export default function VotingPage() {
       setIsVoting(false);
     }
   };
-  
 
   if (status === 'loading') {
     return 'Loading...';
@@ -114,32 +145,30 @@ export default function VotingPage() {
       <main className="bg-white shadow-2xl rounded-2xl w-full max-w-lg p-8">
         <Toaster />
         {activeElection && (
-  <div className="mb-6 p-6 bg-gradient-to-r from-blue-300 to-blue-500 rounded-xl shadow-xl transform transition-transform hover:scale-105 duration-300 w-72 mx-auto">
-    <p className="text-white font-semibold text-center text-lg">
-      <strong className="text-2xl">Welcome to {activeElection.name}</strong>
-    </p>
-  </div>
-)}
-
+          <div className="mb-6 p-6 bg-gradient-to-r from-blue-300 to-blue-500 rounded-xl shadow-xl transform transition-transform hover:scale-105 duration-300 w-72 mx-auto">
+            <p className="text-white font-semibold text-center text-lg">
+              <strong className="text-2xl">Welcome to {activeElection.name}</strong>
+            </p>
+          </div>
+        )}
 
         <h1 className="text-4xl font-extrabold text-center text-blue-700 mb-8">Cast Your Vote</h1>
         <p className="text-gray-600 text-center mb-6">
           Securely vote for your preferred Mayor and Deputy Mayor.
         </p>
         {activeElection && (
-  <div className="mb-6">
-    <p className="text-gray-700">
-   
-      <strong>Election ID:</strong> 
-      <input
-        type="text"
-        value={activeElection.electionId}
-        readOnly
-        className="w-full bg-gray-100 text-gray-700 p-4 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-400"
-      />
-    </p>
-  </div>
-)}
+          <div className="mb-6">
+            <p className="text-gray-700">
+              <strong>Election ID:</strong>
+              <input
+                type="text"
+                value={activeElection.electionId}
+                readOnly
+                className="w-full bg-gray-100 text-gray-700 p-4 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-400"
+              />
+            </p>
+          </div>
+        )}
 
         <div className="mb-6">
           <label className="block text-gray-700 font-medium mb-2">National ID</label>
@@ -159,8 +188,6 @@ export default function VotingPage() {
             <strong>Municipality:</strong> {municipality || "Not available"}
           </p>
         </div>
-
- 
 
         {filteredCandidates.length > 0 ? (
           <div className="space-y-8">

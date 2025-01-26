@@ -1,97 +1,110 @@
-'use client'
+'use client';
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
+import { MdNotificationsActive } from "react-icons/md";  // Import the new notification icon
+
 export default function Header() {
-  const session =useSession();
-  console.log(session)
-  const status =session?.status;
-  const userData=session.data?.user;
-  let userName=userData?.fullName || userData?.nationalId;
-  
-  if(userName && userName.includes(' ')){
-    userName=userName.split(' ')[0]
+  const session = useSession();
+  const status = session?.status;
+  const userData = session.data?.user;
+  let userName = userData?.fullName || userData?.nationalId;
+
+  if (userName && userName.includes(' ')) {
+    userName = userName.split(' ')[0];
   }
-  
-  const isAdmin = userData?.admin
- console.log(isAdmin) 
+
+  const isAdmin = userData?.admin;
+
   return (
     <>
-      <header className="flex items-center justify-between">
-        <nav className="flex items-center gap-8 text-gray-500 font-semibold">
-        <Link className="text-primary font-semibold text-2xl" href="/">
-          Online Voting
-        </Link>
-        <div className="flex space-x-6">
-  <Link
-    href="/"
-    className="px-2 py-1 bg-blue-400 text-white font-medium text-lg rounded-lg shadow-md hover:bg-blue-100 hover:shadow-lg transition duration-200"
-  >
-    Home
-  </Link>
-  <Link
-    href="/about"
-    className="px-2 py-1 bg-green-400 text-white font-medium text-lg rounded-lg shadow-md hover:bg-green-100 hover:shadow-lg transition duration-200"
-  >
-    About
-  </Link>
-  <Link
-    href="/contact"
-    className="px-2 py-1 bg-purple-400 text-white font-medium text-lg rounded-lg shadow-md hover:bg-purple-100 hover:shadow-lg transition duration-200"
-  >
-    Contact
-  </Link>
-</div>
+      <header className="bg-white shadow-sm px-2 py-2 w-full">
+        <div className="max-w-7xl mx-auto flex items-center justify-between w-full">
+          <nav className="flex items-center gap-8 text-gray-600 font-semibold">
+            <Link href="/">
+              <Image
+                src="/O.png"
+                alt="O-Voting"
+                width={50}
+                height={25}
+                className="object-contain"
+              />
+            </Link>
 
+            <div className="flex space-x-6">
+              <Link
+                href="/"
+                className="px-3 py-1 text-lg text-gray-800 rounded-full relative group hover:underline"
+              >
+                Home
+              </Link>
+              <Link
+                href="/about"
+                className="px-3 py-1 text-lg text-gray-800 rounded-full relative group hover:underline"
+              >
+                About
+              </Link>
+              <Link
+                href="/contact"
+                className="px-3 py-1 text-lg text-gray-800 rounded-full relative group hover:underline"
+              >
+                Contact
+              </Link>
+            </div>
+          </nav>
 
-        
-        </nav>
-        <nav className="flex items-center gap-4 text-gray-500">
-          {status === 'authenticated' && (
-            <>
-<Link
-  href={'/profile'}
-  className="flex items-center px-1  bg-gray-50 rounded-lg shadow-sm text-lg font-semibold text-gray-800 cursor-pointer hover:bg-gray-100 hover:shadow-md transition-all duration-300"
->
-  Hey, {userName}!
-</Link>
+          <nav className="flex items-center gap-3 text-gray-600">
+            {status === "authenticated" && (
+              <>
 
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center px-3 py-1 text-lg font-semibold text-gray-800 "
+                  >
+                    <span className="mr-2">📊</span> <span className="hover:underline">Dashboard</span>
+                  </Link>
+                )}
 
+                {/* New Notification Icon (MdNotificationsActive) */}
+                <div className="relative">
+                  {/* <MdNotificationsActive className="text-xl cursor-pointer text-gray-800" /> */}
+                  {/* Notification Badge */}
+                 
+                </div>
+                <Link
+                  href="/profile"
+                  className="flex items-center px-3 py-1 text-lg font-semibold text-gray-800 cursor-pointer "
+                >
+                  <span className="mr-2">👤</span><span className=" hover:underline">{userName}!</span> 
+                </Link>
 
-{isAdmin&&(
-
-  <div>
-    <Link
-      href="/admin"
-      className="inline-flex items-center px-1 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-    >
-       DashBoard
-    </Link>
-  </div>
-)}
-
-              <button
-
-      onClick={()=>signOut()}
-              className="bg-primary text-white rounded-full px-1 py-1 hover:bg-primary-100"
-            >
-              Logout
-            </button>
-            </>
-
-          )}
-          {status === 'unauthenticated' &&(
-     <>
-
-          <Link href="/login">Login</Link>
-        <Link
-            href={"/register"}
-            className="bg-primary text-white rounded-full px-8 py-2"
-          >
-            Register
-          </Link>
-     </>
-          )}
-        </nav>
+                <button
+                  onClick={() => signOut()}
+                  className="bg-primary hover:bg-red-300 text-lg text-white rounded-full px-4 py-1"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+            {status === "unauthenticated" && (
+              <>
+                <Link
+                  href="/login"
+                  className="text-lg text-gray-800 hover:underline"
+                >
+                  Login
+                </Link>
+                <Link
+                  href={"/register"}
+                  className="bg-primary text-white hover:bg-red-300  rounded-full px-8 py-2"
+                >
+                  Register
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
       </header>
     </>
   );

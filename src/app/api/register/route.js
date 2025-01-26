@@ -27,8 +27,8 @@ export async function POST(req) {
         const body = await req.json();
 
         // Destructure and validate required fields
-        const { fullName, phoneNumber, fatherName, nationalId, dateOfBirth, gender, password, district, municipality } = body;
-        if (!fullName || !phoneNumber || !fatherName || !dateOfBirth || !gender || !password || !nationalId || !district || !municipality ) {
+        const { fullName, email, fatherName, nationalId, dateOfBirth, gender, password, district, municipality } = body;
+        if (!fullName || !email || !fatherName || !dateOfBirth || !gender || !password || !nationalId || !district || !municipality ) {
             return new Response(JSON.stringify({ error: "All fields are required" }), { status: 400 });
         }
 
@@ -48,10 +48,10 @@ export async function POST(req) {
             return new Response(JSON.stringify({ error: "Invalid gender provided" }), { status: 400 });
         }
 
-        // Validate phone number (Optional: you can add more specific validation for the format)
-        const phoneNumberFormatted = phoneNumber.trim();
-        if (!/^\+?\d{10,15}$/.test(phoneNumberFormatted)) {  // Simple regex for phone number validation
-            return new Response(JSON.stringify({ error: "Invalid phone number format" }), { status: 400 });
+        // Validate email format
+        const emailFormatted = email.trim().toLowerCase();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailFormatted)) {
+            return new Response(JSON.stringify({ error: "Invalid email format" }), { status: 400 });
         }
 
         // Resolve the file path and read NationalData.json
@@ -74,10 +74,10 @@ export async function POST(req) {
             return new Response(JSON.stringify({ error: "National ID already exists" }), { status: 400 });
         }
 
-        // Check if phone number already exists in the database
-        const phoneNumberExists = await User.findOne({ phoneNumber: phoneNumberFormatted });
-        if (phoneNumberExists) {
-            return new Response(JSON.stringify({ error: "Phone number already exists" }), { status: 400 });
+        // Check if email already exists in the database
+        const emailExists = await User.findOne({ email: emailFormatted });
+        if (emailExists) {
+            return new Response(JSON.stringify({ error: "Email already exists" }), { status: 400 });
         }
 
         // Find the user by nationalId in NationalData.json
@@ -110,7 +110,7 @@ export async function POST(req) {
         const createdUser = await User.create({
             fullName: fullNameUpper,
             fatherName: fatherNameUpper,
-            phoneNumber: phoneNumberFormatted,  // Store phone number
+            email: emailFormatted, // Store email
             nationalId: nationalIdUpper,
             dateOfBirth: dateOfBirthFormatted,
             gender: genderFormatted,
@@ -127,5 +127,21 @@ export async function POST(req) {
     } catch (error) {
         console.error("Error during registration:", error);
         return new Response(JSON.stringify({ error: "An error occurred during registration" }), { status: 500 });
+    }
+}
+
+export async function GET(req) {
+    try {
+        // Ensure the database connection is established
+        await connectToDatabase();
+
+        // Fetch all voters from the database, excluding the password field
+        const voters = await User.find().select("-password");
+
+        // Return the fetched voters in the response
+        return new Response(JSON.stringify({ voters }), { status: 200 });
+    } catch (error) {
+        console.error("Error fetching voters:", error);
+        return new Response(JSON.stringify({ error: "An error occurred while fetching voters" }), { status: 500 });
     }
 }
