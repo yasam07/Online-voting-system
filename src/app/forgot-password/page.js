@@ -18,11 +18,12 @@ export default function ForgotPasswordPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post('/api/forgot-password', { nationalId, email });
-
+      const response = await axios.post('/api/forgot-password/', { nationalId, email });
+     
       if (response.data.success) {
         toast.success('OTP sent to your email!');
-        router.push('/verify-otp'); // Redirect to an OTP verification page (if applicable)
+        // Pass the email as a query parameter
+        router.push(`/forgot-password/verify-otp?email=${encodeURIComponent(email)}`);
       } else {
         toast.error(response.data.message || 'User not found');
       }

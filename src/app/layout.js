@@ -13,18 +13,25 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+<html lang="en">
       <body className={roboto.className}>
-        <main className="max-w-7xl  mx-auto  p-4">
-          <AppProvider>
-            <Toaster/>
-          <Header/>
-                      {children}
-                      <footer className="border-t pt-7 text-gray-500 text-center mt-16">
-        &copy; 2024 All rights reserved
-      </footer>
-          </AppProvider>
-      </main>
+        <AppProvider>
+          <Toaster />
+          <div className="flex flex-col min-h-screen  max-w-8xl">
+            {/* Header */}
+            <Header />
+
+            {/* Main Content */}
+            <main className="flex-grow max-w-8xl mx-auto px-6 py-4">
+              {children}
+            </main>
+
+            {/* Footer */}
+            <footer className="border-t pt-6 pb-4 text-gray-500 text-center mt-12">
+              &copy; 2024 All rights reserved
+            </footer>
+          </div>
+        </AppProvider>
       </body>
     </html>
   );

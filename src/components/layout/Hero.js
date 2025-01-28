@@ -60,7 +60,7 @@ export default function Hero() {
         <div className="flex gap-4 text-sm ml-20">
           {nationalId ? (
             <Link href="/voting">
-              <button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold uppercase flex gap-2 px-7 py-3 rounded-full items-center shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              <button className="bg-gradient-to-r ml-10 from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold uppercase flex gap-2 px-7 py-3 rounded-full items-center shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 Go for Voting
                 <Right />
               </button>

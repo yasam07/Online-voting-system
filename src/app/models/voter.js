@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const { model, models, Schema } = mongoose;
+const { Schema, model, models } = mongoose;
 
 const UserSchema = new Schema(
   {
@@ -47,6 +47,14 @@ const UserSchema = new Schema(
       type: Boolean,
       default: false,
       required: true,
+    },
+    resetOtp: {
+      type: String,
+      select: false, // Excluded by default
+    },
+    resetOtpExpires: {
+      type: Date,
+      select: false, // Excluded by default
     },
   },
   { timestamps: true }
