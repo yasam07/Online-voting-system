@@ -135,7 +135,7 @@ const Contact = () => {
           <ul className="space-y-6 text-lg text-gray-700">
             <li className="flex items-center space-x-4">
               <FaEnvelope className="text-indigo-500" />
-              <span>Email: <a href="mailto:contact@votingsystem.com" className="text-indigo-500 hover:text-indigo-600">contact@votingsystem.com</a></span>
+              <span>Email: <a href="mailto:contact@votingsystem.com" className="text-indigo-500 hover:text-indigo-600">municipality374@votingsystem.com</a></span>
             </li>
             <li className="flex items-center space-x-4">
               <FaPhoneAlt className="text-indigo-500" />
@@ -143,7 +143,7 @@ const Contact = () => {
             </li>
             <li className="flex items-center space-x-4">
               <FaMapMarkerAlt className="text-indigo-500" />
-              <span>Address: 123 Democracy Lane, Voting City, World 56789</span>
+              <span>Address: Munipality344, District, World 56789</span>
             </li>
           </ul>
         </section>

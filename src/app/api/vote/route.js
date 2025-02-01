@@ -1,6 +1,5 @@
-// pages/api/vote.js
 import mongoose from 'mongoose';
-import { encryptFeistel } from '../../../libs/encryption';
+import { encryptRSA, generateRSAKeys } from '../../../libs/encryption'; // Import RSA functions
 import Vote from '../../models/Vote';
 import CandidateVoteCount from '../../models/CandidateVoteCount';
 
@@ -11,6 +10,9 @@ const connectMongo = async () => {
     useUnifiedTopology: true,
   });
 };
+
+// Generate RSA keys (normally, you might want to store this somewhere secure, not generate each time)
+const { publicKey, privateKey } = generateRSAKeys();
 
 export async function POST(req) {
   await connectMongo();
@@ -43,13 +45,9 @@ export async function POST(req) {
       );
     }
 
-    const key = 5; // Encryption key
-
-    // Encrypt candidate IDs
-    const encryptedMayorId = encryptFeistel(mayorId.toString(), key);
-    const encryptedDeputyMayorId = encryptFeistel(deputyMayorId.toString(), key);
-    console.log('encypted:mayorId:',encryptedMayorId)
-    console.log('encrpted deputymayorId',encryptedDeputyMayorId)
+    // Encrypt candidate IDs using RSA
+    const encryptedMayorId = encryptRSA(mayorId.toString(), publicKey);
+    const encryptedDeputyMayorId = encryptRSA(deputyMayorId.toString(), publicKey);
 
     const voteData = {
       voterId,

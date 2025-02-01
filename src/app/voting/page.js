@@ -26,7 +26,13 @@ export default function VotingPage() {
       try {
         const response = await axios.get('/api/candidates/');
         const data = response.data;
-        setCandidatesData(data);
+
+        // Filter candidates to only include those for the active election
+        const electionCandidates = data.filter(candidate => {
+          return candidate.electionId === activeElection?.electionId;
+        });
+
+        setCandidatesData(electionCandidates);
       } catch (error) {
         console.error("Error fetching candidates:", error);
         toast.error("Failed to fetch candidates.");
@@ -38,10 +44,8 @@ export default function VotingPage() {
         const response = await axios.get('/api/elections');
         const elections = response.data.elections || []; // Access the elections array
 
-        // Ensure elections is an array before calling .find
         if (Array.isArray(elections)) {
           const election = elections.find(election => election.electionId === session?.activeElection?.electionId);
-          console.log(election);
           if (election) {
             setElectionsData([election]);
 
@@ -67,6 +71,7 @@ export default function VotingPage() {
 
   const normalizeString = (str) => str?.trim().toLowerCase() || '';
 
+  // Filter candidates for the selected district and municipality from the active election only
   const filteredCandidates = candidatesData.filter(
     (candidate) =>
       normalizeString(candidate.district) === normalizeString(district) &&

@@ -2,7 +2,7 @@
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { MdNotificationsActive } from "react-icons/md";
+
 
 export default function Header() {
   const session = useSession();
@@ -49,18 +49,12 @@ export default function Header() {
           {status === "authenticated" ? (
             <>
               {isAdmin && (
-                <Link href="/admin" className="flex items-center text-gray-800 font-semibold text-xl hover:underline">
-                  <span className="mr-3">📊</span> Dashboard
+                <Link href="/admin" className="flex items-center text-gray-800 font-semibold text-xl">
+                  <span className="mr-3">📊</span> <span className="hover:underline">Dashboard</span>
                 </Link>
               )}
 
-              {/* Notification Icon */}
-              <div className="relative cursor-pointer">
-                <MdNotificationsActive className="text-4xl text-gray-800" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-sm w-6 h-6 flex items-center justify-center rounded-full">
-                  3
-                </span>
-              </div>
+            
 
               {/* Profile */}
               <Link href="/profile" className="flex items-center text-gray-800 font-semibold text-xl hover:underline">

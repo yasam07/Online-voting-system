@@ -1,7 +1,9 @@
-// pages/api/result.js
 import mongoose from 'mongoose';
 import CandidateVoteCount from '../../models/CandidateVoteCount';
-import { decryptFeistel } from '../../../libs/encryption';
+import { decryptRSA, generateRSAKeys } from '../../../libs/encryption'; // Import RSA decryption function
+
+// Generate RSA keys (Private key will be used for decryption)
+const { privateKey } = generateRSAKeys(); // Normally, you'd want to securely store the private key
 
 const connectMongo = async () => {
   if (mongoose.connections[0].readyState) return;
@@ -24,13 +26,11 @@ export async function GET() {
       );
     }
 
-    const key = 5;
-
     const results = voteCounts.map((voteCount) => {
-      const decryptedMayorId = decryptFeistel(voteCount.mayorId, key);
-      const decryptedDeputyMayorId = decryptFeistel(voteCount.deputyMayorId, key);
-      console.log(decryptedMayorId)
-      console.log(decryptedDeputyMayorId)
+      // Decrypt the mayor and deputy mayor IDs using RSA decryption
+      const decryptedMayorId = decryptRSA(voteCount.mayorId, privateKey);
+      const decryptedDeputyMayorId = decryptRSA(voteCount.deputyMayorId, privateKey);
+
       return {
         mayorId: decryptedMayorId,
         mayorVotes: voteCount.mayorVotes,

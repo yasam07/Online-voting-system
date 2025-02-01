@@ -46,7 +46,7 @@ export default function Hero() {
           </div>
         )}
 
-        <div className="flex gap-4 text-sm justify-center">
+        <div className="flex gap-4 text-sm justify-center mt-10">
           {nationalId ? (
             <Link href="/voting">
               <button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold uppercase flex gap-2 px-7 py-3 rounded-full items-center shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -67,6 +67,16 @@ export default function Hero() {
             Learn More
             <Right />
           </button>
+        </div>
+
+        {/* New Line for See Result Button */}
+        <div className="flex justify-center mt-10">
+          <Link href="/result">
+            <button className="flex justify-center w-80 items-center gap-2 py-2 px-4 bg-gradient-to-r from-green-500 to-teal-400 hover:from-green-600 hover:to-teal-500 text-white font-semibold rounded-full shadow-md transition-all duration-300 ease-in-out hover:scale-105">
+              See Result
+              <Right />
+            </button>
+          </Link>
         </div>
       </div>
 

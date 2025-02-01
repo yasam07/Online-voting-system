@@ -28,7 +28,7 @@ export default function RootLayout({ children }) {
 
             {/* Footer */}
             <footer className="border-t pt-6 pb-4 text-gray-500 text-center mt-12">
-              &copy; 2024 All rights reserved
+              &copy; 2025 All rights reserved
             </footer>
           </div>
         </AppProvider>
