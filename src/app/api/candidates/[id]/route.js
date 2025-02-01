@@ -66,11 +66,11 @@ export async function PUT(req, { params }) {
       $or: [
         {
           'mayorCandidates.candidateId': candidateId,
-          'mayorCandidates._id': { $ne: id }, // Exclude the current candidate
+       //   'mayorCandidates._id': { $ne: id }, // Exclude the current candidate
         },
         {
           'deputyMayorCandidates.candidateId': candidateId,
-          'deputyMayorCandidates._id': { $ne: id }, // Exclude the current candidate
+         // 'deputyMayorCandidates._id': { $ne: id }, // Exclude the current candidate
         },
       ],
     });

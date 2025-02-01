@@ -49,28 +49,23 @@ const ResultsPage = () => {
 
   // Ensure mayorVotes are populated correctly
   voteCounts.forEach(result => {
-    // Log each result to check the mayorId and mayorVotes
-    console.log('Vote result:', result);
-
     if (result.mayorId) {
-      const mayorVotes = result.mayorVotes || 0; // Safeguard against missing votes
+      const mayorVotes = result.mayorVotes || 0;
       mayorVotesCount[result.mayorId] = (mayorVotesCount[result.mayorId] || 0) + mayorVotes;
     }
     if (result.deputyMayorId) {
-      const deputyMayorVotes = result.deputyMayorVotes || 0; // Safeguard against missing votes
+      const deputyMayorVotes = result.deputyMayorVotes || 0;
       deputyMayorVotesCount[result.deputyMayorId] = (deputyMayorVotesCount[result.deputyMayorId] || 0) + deputyMayorVotes;
     }
   });
 
-  // Calculate total votes for mayor and deputy mayor
-  const totalMayorVotes = Object.values(mayorVotesCount).reduce((a, b) => a + b, 0);
-  const totalDeputyMayorVotes = Object.values(deputyMayorVotesCount).reduce((a, b) => a + b, 0);
+  // Filter candidates to only show those that match the active election's electionId
+  const filteredCandidates = candidates.filter(
+    (candidate) => candidate.electionId === activeElection?.electionId
+  );
 
-  console.log('Mayor Votes Count:', mayorVotesCount); // Debugging mayor vote count
-  console.log('Deputy Mayor Votes Count:', deputyMayorVotesCount); // Debugging deputy mayor vote count
-
-  // Group candidates by district and municipality
-  const groupedCandidates = candidates.reduce((grouped, candidate) => {
+  // Group candidates by district and municipality for the active election
+  const groupedCandidates = filteredCandidates.reduce((grouped, candidate) => {
     const { district, municipality, mayorCandidates, deputyMayorCandidates } = candidate;
     const key = `${district}-${municipality}`;
 
@@ -98,64 +93,63 @@ const ResultsPage = () => {
       )}
 
       <div className="text-center text-lg text-gray-700 mb-8">
-        <p className="font-medium"><strong>Total Mayor Votes:</strong> {totalMayorVotes}</p>
-        <p className="font-medium"><strong>Total Deputy Mayor Votes:</strong> {totalDeputyMayorVotes}</p>
+        <p className="font-medium"><strong>Total Mayor Votes:</strong> {Object.values(mayorVotesCount).reduce((a, b) => a + b, 0)}</p>
+        <p className="font-medium"><strong>Total Deputy Mayor Votes:</strong> {Object.values(deputyMayorVotesCount).reduce((a, b) => a + b, 0)}</p>
       </div>
 
       {voteCounts.length === 0 ? (
         <p className="text-center text-lg text-gray-500">No results available</p>
       ) : (
         <div className="space-y-12">
-  {Object.values(groupedCandidates).map(({ district, municipality, mayorCandidates, deputyMayorCandidates }) => (
-    <div key={`${district}-${municipality}`} className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-xl shadow-lg border border-gray-200 space-y-8">
-      {/* District and Municipality Header */}
-      <h3 className="text-3xl font-bold text-center text-indigo-900">{district}, {municipality}</h3>
+          {Object.values(groupedCandidates).map(({ district, municipality, mayorCandidates, deputyMayorCandidates }) => (
+            <div key={`${district}-${municipality}`} className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-xl shadow-lg border border-gray-200 space-y-8">
+              {/* District and Municipality Header */}
+              <h3 className="text-3xl font-bold text-center text-indigo-900">{district}, {municipality}</h3>
 
-      {/* Mayor Candidates */}
-      <div className="space-y-6">
-        <h4 className="text-2xl font-semibold text-gray-800">Mayor Candidates</h4>
-        {mayorCandidates.map((mayor) => {
-          const mayorVoteCount = mayorVotesCount[mayor.candidateId] || 0;
-          return (
-            <div
-              key={mayor.candidateId}
-              className="bg-white p-6 rounded-lg shadow-md border border-gray-300 hover:bg-gradient-to-r hover:from-green-100 hover:to-yellow-100 transition-all duration-300"
-            >
-              <div className="flex items-center justify-between">
-                <h5 className="text-xl font-semibold text-gray-800">Name:{mayor.name}</h5>
-                <p className="text-lg text-gray-700"><strong>Votes:</strong> {mayorVoteCount}</p>
+              {/* Mayor Candidates */}
+              <div className="space-y-6">
+                <h4 className="text-2xl font-semibold text-gray-800">Mayor Candidates</h4>
+                {mayorCandidates.map((mayor) => {
+                  const mayorVoteCount = mayorVotesCount[mayor.candidateId] || 0;
+                  return (
+                    <div
+                      key={mayor.candidateId}
+                      className="bg-white p-6 rounded-lg shadow-md border border-gray-300 hover:bg-gradient-to-r hover:from-green-100 hover:to-yellow-100 transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-xl font-semibold text-gray-800">Name: {mayor.name}</h5>
+                        <p className="text-lg text-gray-700"><strong>Votes:</strong> {mayorVoteCount}</p>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-2">Party: <span className="font-medium text-green-600">{mayor.party}</span></p>
+                      <p className="text-sm text-gray-500 mt-2">Mayor ID: {mayor.candidateId}</p>
+                    </div>
+                  );
+                })}
               </div>
-              <p className="text-sm text-gray-500 mt-2">Party: <span className="font-medium text-green-600">{mayor.party}</span></p>
-              <p className="text-sm text-gray-500 mt-2">Mayor ID: {mayor.candidateId}</p>
-            </div>
-          );
-        })}
-      </div>
 
-      {/* Deputy Mayor Candidates */}
-      <div className="space-y-6">
-        <h4 className="text-2xl font-semibold text-gray-800">Deputy Mayor Candidates</h4>
-        {deputyMayorCandidates.map((deputyMayor) => {
-          const deputyMayorVoteCount = deputyMayorVotesCount[deputyMayor.candidateId] || 0;
-          return (
-            <div
-              key={deputyMayor.candidateId}
-              className="bg-white p-6 rounded-lg shadow-md border border-gray-300 hover:bg-gradient-to-r hover:from-pink-100 hover:to-purple-100 transition-all duration-300"
-            >
-              <div className="flex items-center justify-between">
-                <h5 className="text-xl font-semibold text-gray-800">Name:{deputyMayor.name}</h5>
-                <p className="text-lg text-gray-700"><strong>Votes:</strong> {deputyMayorVoteCount}</p>
+              {/* Deputy Mayor Candidates */}
+              <div className="space-y-6">
+                <h4 className="text-2xl font-semibold text-gray-800">Deputy Mayor Candidates</h4>
+                {deputyMayorCandidates.map((deputyMayor) => {
+                  const deputyMayorVoteCount = deputyMayorVotesCount[deputyMayor.candidateId] || 0;
+                  return (
+                    <div
+                      key={deputyMayor.candidateId}
+                      className="bg-white p-6 rounded-lg shadow-md border border-gray-300 hover:bg-gradient-to-r hover:from-pink-100 hover:to-purple-100 transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-xl font-semibold text-gray-800">Name: {deputyMayor.name}</h5>
+                        <p className="text-lg text-gray-700"><strong>Votes:</strong> {deputyMayorVoteCount}</p>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-2">Party: <span className="font-medium text-blue-600">{deputyMayor.party}</span></p>
+                      <p className="text-sm text-gray-500 mt-2">Deputy Mayor ID: {deputyMayor.candidateId}</p>
+                    </div>
+                  );
+                })}
               </div>
-              <p className="text-sm text-gray-500 mt-2">Party: <span className="font-medium text-blue-600">{deputyMayor.party}</span></p>
-              <p className="text-sm text-gray-500 mt-2">Deputy Mayor ID: {deputyMayor.candidateId}</p>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  ))}
-</div>
-
+          ))}
+        </div>
       )}
     </div>
   );

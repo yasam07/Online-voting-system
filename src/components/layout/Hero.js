@@ -1,6 +1,6 @@
-'use client'; // Enable Client Component behavior
+'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from "next/image";
 import Right from "./icons/Right";
 import Link from "next/link";
@@ -8,24 +8,14 @@ import { useSession } from "next-auth/react";
 
 export default function Hero() {
   const { data: session, status } = useSession();
-  const [showFirstMessage, setShowFirstMessage] = useState(true); // Initially show the first message
+  const [showFirstMessage, setShowFirstMessage] = useState(true);
 
   const nationalId = session?.user?.nationalId || '';
   const activeElection = session?.activeElection || null;
 
-  useEffect(() => {
-    // Alternate messages every 2 seconds
-    const interval = setInterval(() => {
-      setShowFirstMessage((prev) => !prev);
-    }, 2000);
-
-    // Cleanup interval when the component unmounts
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <section className="hero mt-4 mx-10">
-      <div className="py-12 ml-15">
+      <div className="py-12">
         <h1 className="text-xl sm:text-2xl lg:text-4xl font-extrabold text-center leading-tight text-gray-900 mb-6">
           Your Voice
           <br />
@@ -36,11 +26,10 @@ export default function Hero() {
           <span className="text-indigo-600">Vote</span>
         </h1>
 
-        <p className="my-6 ml-10 text-lg sm:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+        <p className="my-6 text-lg sm:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto text-center">
           Voting is the power to shape the future, a simple yet significant choice in life.
         </p>
 
-        {/* Display Active Election Details */}
         {activeElection ? (
           <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-lg shadow-lg p-4 mb-4 text-center transition-transform transform hover:scale-105 animate-fadeIn max-w-xs mx-auto">
             <h2 className="text-lg font-extrabold">
@@ -57,10 +46,10 @@ export default function Hero() {
           </div>
         )}
 
-        <div className="flex gap-4 text-sm ml-20">
+        <div className="flex gap-4 text-sm justify-center">
           {nationalId ? (
             <Link href="/voting">
-              <button className="bg-gradient-to-r ml-10 from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold uppercase flex gap-2 px-7 py-3 rounded-full items-center shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+              <button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold uppercase flex gap-2 px-7 py-3 rounded-full items-center shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
                 Go for Voting
                 <Right />
               </button>
@@ -80,12 +69,15 @@ export default function Hero() {
           </button>
         </div>
       </div>
-      <div className="relative mr-10">
+
+      {/* Single Image Display Without Frame */}
+      <div className="flex justify-center mt-10">
         <Image
-          src="/ballot.png" // Update this to a voting-related image if available
-          layout="fill"
-          objectFit="contain"
-          alt="voting"
+          src="/ballot.png"
+          width={500}
+          height={350}
+          alt="Voting Ballot"
+          className="object-cover"
         />
       </div>
     </section>

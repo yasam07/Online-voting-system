@@ -29,7 +29,8 @@ export async function GET() {
     const results = voteCounts.map((voteCount) => {
       const decryptedMayorId = decryptFeistel(voteCount.mayorId, key);
       const decryptedDeputyMayorId = decryptFeistel(voteCount.deputyMayorId, key);
-
+      console.log(decryptedMayorId)
+      console.log(decryptedDeputyMayorId)
       return {
         mayorId: decryptedMayorId,
         mayorVotes: voteCount.mayorVotes,

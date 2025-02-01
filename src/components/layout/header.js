@@ -2,7 +2,7 @@
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { MdNotificationsActive } from "react-icons/md";  // Import the new notification icon
+import { MdNotificationsActive } from "react-icons/md";
 
 export default function Header() {
   const session = useSession();
@@ -17,95 +17,76 @@ export default function Header() {
   const isAdmin = userData?.admin;
 
   return (
-    <>
-      <header className="bg-white shadow-sm px-2 py-2 w-full">
-        <div className="max-w-7xl mx-auto flex items-center justify-between w-full">
-          <nav className="flex items-center gap-8 text-gray-600 font-semibold">
-            <Link href="/">
-              <Image
-                src="/O.png"
-                alt="O-Voting"
-                width={50}
-                height={25}
-                className="object-contain"
-              />
+    <header className="bg-white shadow-sm py-6 px-10 w-full">
+      <div className="flex items-center justify-between w-full">
+        {/* Left Section: Logo & Navigation */}
+        <div className="flex items-center gap-16">
+          <Link href="/">
+            <Image
+              src="/O.png"
+              alt="O-Voting"
+              width={65}
+              height={45}
+              className="object-contain"
+            />
+          </Link>
+
+          <nav className="flex space-x-16">
+            <Link href="/" className="text-gray-800 font-semibold text-xl hover:underline px-5 py-3 mx-2">
+              Home
             </Link>
-
-            <div className="flex space-x-6">
-              <Link
-                href="/"
-                className="px-3 py-1 text-lg text-gray-800 rounded-full relative group hover:underline"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="px-3 py-1 text-lg text-gray-800 rounded-full relative group hover:underline"
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className="px-3 py-1 text-lg text-gray-800 rounded-full relative group hover:underline"
-              >
-                Contact
-              </Link>
-            </div>
-          </nav>
-
-          <nav className="flex items-center gap-3 text-gray-600">
-            {status === "authenticated" && (
-              <>
-
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="flex items-center px-3 py-1 text-lg font-semibold text-gray-800 "
-                  >
-                    <span className="mr-2">📊</span> <span className="hover:underline">Dashboard</span>
-                  </Link>
-                )}
-
-                {/* New Notification Icon (MdNotificationsActive) */}
-                <div className="relative">
-                  {/* <MdNotificationsActive className="text-xl cursor-pointer text-gray-800" /> */}
-                  {/* Notification Badge */}
-                 
-                </div>
-                <Link
-                  href="/profile"
-                  className="flex items-center px-3 py-1 text-lg font-semibold text-gray-800 cursor-pointer "
-                >
-                  <span className="mr-2">👤</span><span className=" hover:underline">{userName}!</span> 
-                </Link>
-
-                <button
-                  onClick={() => signOut()}
-                  className="bg-primary hover:bg-red-300 text-lg text-white rounded-full px-4 py-1"
-                >
-                  Logout
-                </button>
-              </>
-            )}
-            {status === "unauthenticated" && (
-              <>
-                <Link
-                  href="/login"
-                  className="text-lg text-gray-800 hover:underline"
-                >
-                  Login
-                </Link>
-                <Link
-                  href={"/register"}
-                  className="bg-primary text-white hover:bg-red-300  rounded-full px-8 py-2"
-                >
-                  Register
-                </Link>
-              </>
-            )}
+            <Link href="/about" className="text-gray-800 font-semibold text-xl hover:underline px-5 py-3 mx-2">
+              About
+            </Link>
+            <Link href="/contact" className="text-gray-800 font-semibold text-xl hover:underline px-5 py-3 mx-2">
+              Contact
+            </Link>
           </nav>
         </div>
-      </header>
-    </>
+
+        {/* Right Section: User Menu */}
+        <div className="flex items-center space-x-16 ml-auto">
+          {status === "authenticated" ? (
+            <>
+              {isAdmin && (
+                <Link href="/admin" className="flex items-center text-gray-800 font-semibold text-xl hover:underline">
+                  <span className="mr-3">📊</span> Dashboard
+                </Link>
+              )}
+
+              {/* Notification Icon */}
+              <div className="relative cursor-pointer">
+                <MdNotificationsActive className="text-4xl text-gray-800" />
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-sm w-6 h-6 flex items-center justify-center rounded-full">
+                  3
+                </span>
+              </div>
+
+              {/* Profile */}
+              <Link href="/profile" className="flex items-center text-gray-800 font-semibold text-xl hover:underline">
+                <span className="mr-3">👤</span> {userName}!
+              </Link>
+
+              {/* Logout Button */}
+              <button
+                onClick={() => signOut()}
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold text-xl px-10 py-4 rounded-full"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-gray-800 font-semibold text-xl hover:underline mx-3">
+                Login
+              </Link>
+              <Link href="/register" className="bg-red-500 hover:bg-red-600 text-white font-semibold text-xl px-10 py-4 rounded-full">
+                Register
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
   );
 }

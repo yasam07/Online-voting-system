@@ -48,6 +48,8 @@ export async function POST(req) {
     // Encrypt candidate IDs
     const encryptedMayorId = encryptFeistel(mayorId.toString(), key);
     const encryptedDeputyMayorId = encryptFeistel(deputyMayorId.toString(), key);
+    console.log('encypted:mayorId:',encryptedMayorId)
+    console.log('encrpted deputymayorId',encryptedDeputyMayorId)
 
     const voteData = {
       voterId,

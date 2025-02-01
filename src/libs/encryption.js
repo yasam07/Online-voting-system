@@ -1,5 +1,3 @@
-// libs/encryption.js
-
 // Feistel Cipher Round Function
 function feistelRound(left, right, key) {
   const roundResult = (right ^ key) >>> 0; // XOR right with the key
@@ -16,7 +14,7 @@ const encryptFeistel = (message, key, rounds = 4) => {
 
   // Ensure an even number of digits
   if (n % 2 !== 0) {
-    messageStr = '0' + messageStr;
+    messageStr = '0' + messageStr; // Prepend a '0' if the length is odd
   }
 
   let left = parseInt(messageStr.slice(0, n / 2), 10); // Left half
@@ -29,7 +27,7 @@ const encryptFeistel = (message, key, rounds = 4) => {
     right = result.right;
   }
 
-  // Combine the halves
+  // Combine the halves after encryption
   return `${left}${right}`;
 };
 
@@ -40,7 +38,7 @@ const decryptFeistel = (encryptedMessage, key, rounds = 4) => {
 
   // Ensure an even number of digits
   if (n % 2 !== 0) {
-    messageStr = '0' + messageStr;
+    messageStr = '0' + messageStr; // Prepend a '0' if the length is odd
   }
 
   let left = parseInt(messageStr.slice(0, n / 2), 10);
@@ -53,7 +51,14 @@ const decryptFeistel = (encryptedMessage, key, rounds = 4) => {
     left = result.right;
   }
 
-  return `${left}${right}`;
+  let decryptedMessage = `${left}${right}`;
+
+  // Remove leading '0' if it was prepended during encryption
+  if (decryptedMessage.length > 1 && decryptedMessage[0] === '0') {
+    decryptedMessage = decryptedMessage.slice(1); // Remove the leading zero
+  }
+
+  return decryptedMessage;
 };
 
 module.exports = {

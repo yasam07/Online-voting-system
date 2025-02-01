@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-
+import { useSession } from 'next-auth/react';
 export default function EditElectionPage({ params }) {
   const { id } = params; // Extract `id` from the dynamic route
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function EditElectionPage({ params }) {
   const [districts, setDistricts] = useState([]);
   const [municipalities, setMunicipalities] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const { data: session, status } = useSession();
   useEffect(() => {
     if (!id) {
       toast.error('Election ID is missing.');
@@ -135,6 +135,9 @@ export default function EditElectionPage({ params }) {
   if (loading) {
     return <div>Loading election details...</div>;
   }
+  const isAdmin = session?.user?.admin;
+
+  if (!isAdmin) return <div>Access denied. You are not an admin.</div>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

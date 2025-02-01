@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
+import { useSession } from 'next-auth/react';
 const TerminateElection = ({ params }) => {
   const router = useRouter();
   const { id } = params; // Get the election ID from the URL
@@ -12,7 +12,7 @@ const TerminateElection = ({ params }) => {
   const [districts, setDistricts] = useState([]); // Store all district data
   const [municipalities, setMunicipalities] = useState([]);
   const [showSpecificForm, setShowSpecificForm] = useState(false); // Control form visibility
-
+const { data: session, status } = useSession();
   // Fetch district data from the public directory
   useEffect(() => {
     const fetchDistricts = async () => {
@@ -91,6 +91,10 @@ const TerminateElection = ({ params }) => {
       setLoading(false);
     }
   };
+
+  const isAdmin = session?.user?.admin;
+
+  if (!isAdmin) return <div>Access denied. You are not an admin.</div>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
