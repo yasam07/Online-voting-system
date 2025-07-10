@@ -105,6 +105,29 @@ export async function PUT(req, { params }) {
         { status: 400 }
       );
     }
+    if (new Date(endTime) <= new Date(startTime)) {
+      return new Response(
+        JSON.stringify({ error: 'End time must be after start time.' }),
+        { status: 400 }
+      );
+    }
+
+    // Check if any election is currently running in the requested timeframe
+  
+const conflictingElection = await Election.findOne({
+  _id: { $ne: new mongoose.Types.ObjectId(id) },
+  startTime: { $lt: new Date(endTime) },
+  endTime: { $gt: new Date(startTime) },
+});
+    
+    if (conflictingElection) {
+      return new Response(
+        JSON.stringify({
+          error: `An election (${conflictingElection.name}) is already running during the requested time frame.`,
+        }),
+        { status: 400 }
+      );
+    }
 
     // Validate startTime and endTime
     const validStartTime = new Date(startTime).toISOString();

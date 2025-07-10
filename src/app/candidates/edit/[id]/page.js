@@ -117,23 +117,27 @@ export default function EditCandidatePage({ params }) {
           />
         </div>
         <div>
-          <label
-            htmlFor="party"
-            className="block text-sm font-medium text-gray-600"
-          >
-            Party:
-          </label>
-          <input
-            type="text"
-            id="party"
-            name="party"
-            value={candidateData.party}
-            onChange={handleChange}
-            required
-            className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-400 focus:border-blue-400 text-gray-700 placeholder-gray-400"
-            placeholder="Enter candidate's party"
-          />
-        </div>
+  <label
+    htmlFor="party"
+    className="block text-sm font-medium text-gray-600"
+  >
+    Party:
+  </label>
+  <select
+    id="party"
+    name="party"
+    value={candidateData.party}
+    onChange={handleChange}
+    required
+    className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-400 focus:border-blue-400 text-gray-700 bg-white"
+  >
+    <option value="">Select Party</option>
+    <option value="Party A">Party A</option>
+    <option value="Party B">Party B</option>
+    <option value="Party C">Party C</option>
+  </select>
+</div>
+
         <button
           type="submit"
           className="w-full px-6 py-3  text-white font-semibold rounded-lg shadow-md hover:bg-red-300 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-transform duration-200"

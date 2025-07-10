@@ -1,101 +1,95 @@
 [
   {
-    "fullName": "test1",
-    "fatherName": "Father1",
-    "dateOfBirth": "2005-02-02",
-    "gender": "Female",
-    "nationalId": "1",
-    "district": "Bhaktapur",
-    "municipality": "Madhyapur Thimi"
-   
-  },
-  {
-    "fullName": "test88",
-    "fatherName": "Father88",
-    "dateOfBirth": "2005-02-02",
-    "gender": "Female",
-    "nationalId": "88",
-    "district": "Bhaktapur",
-    "municipality": "Madhyapur Thimi"
-   
-  },
-  {
-    "fullName": "test33",
-    "fatherName": "Father33",
-    "dateOfBirth": "2000-01-01",
-    "gender": "Male",
-    "nationalId": "33",
-    "district": "Bhaktapur",
-    "municipality": "Madhyapur Thimi",
-    "ward": "1"
-  },
-  {
-    "fullName": "test44",
-    "fatherName": "Father44",
-    "dateOfBirth": "2000-01-01",
-    "gender": "Male",
-    "nationalId": "44",
-    "district": "Bhaktapur",
-    "municipality": "Madhyapur Thimi",
-    "ward": "1"
-  },
-  
-  {
-    "fullName": "test22",
-    "fatherName": "Father22",
-    "dateOfBirth": "2000-01-01",
-    "gender": "Male",
-
-    "nationalId": "22",
-    "district": "Bhaktapur",
-    "municipality": "Madhyapur Thimi",
-    "ward": "1"
-  },
-  {
     "fullName": "test0",
     "fatherName": "Father0",
     "dateOfBirth": "2000-01-01",
     "gender": "Male",
-
+  
     "nationalId": "0",
     "district": "Kathmandu",
-    "municipality": "Kathmandu Metropolitan",
-    "ward": "1"
+    "municipality": "Kathmandu Metropolitan"
+    
+  },
+  {
+    "fullName": "test1",
+    "fatherName": "Father1",
+    "dateOfBirth": "2000-01-01",
+    "gender": "Male",
+    "nationalId": "1",
+    "district": "Kathmandu",
+    "municipality": "Kathmandu Metropolitan"
+  },
+  {
+    "fullName": "test2",
+    "fatherName": "Father2",
+    "dateOfBirth": "2000-01-02",
+    "gender": "Female",
+    "nationalId": "2",
+    "district": "Kathmandu",
+    "municipality": "Kageshwari Manohara"
+  },
+  {
+    "fullName": "test3",
+    "fatherName": "Father3",
+    "dateOfBirth": "2000-01-03",
+    "gender": "Male",
+    "nationalId": "3",
+    "district": "Kathmandu",
+    "municipality": "Budhanilkantha"
+  },
+  {
+    "fullName": "test4",
+    "fatherName": "Father4",
+    "dateOfBirth": "2000-01-04",
+    "gender": "Female",
+    "nationalId": "4",
+    "district": "Lalitpur",
+    "municipality": "Lalitpur Metropolitan"
+  },
+  {
+    "fullName": "test5",
+    "fatherName": "Father5",
+    "dateOfBirth": "2000-01-05",
+    "gender": "Male",
+    "nationalId": "5",
+    "district": "Lalitpur",
+    "municipality": "Godawari"
   },
   {
     "fullName": "test6",
     "fatherName": "Father6",
-    "dateOfBirth": "2006-06-06",
-    "gender": "Male",
-
-    "password": "$2a$10$S7F1Zh0Qq5bhAXqkA54ekOuCV1htV4DW15kdFmp1Az9ZXyYsZnQ2i",
-    "nationalId": "6",
-    "district": "Kathmandu",
-    "municipality": "Kathmandu Metropolitan",
-    "ward": "2"
-  },
-  {
-    "fullName": "Jane Smith",
-    "fatherName": "John Smith",
-    "dateOfBirth": "1988-03-12",
+    "dateOfBirth": "2000-01-06",
     "gender": "Female",
-
-    "password": "$2a$10$S7F1Zh0Qq5bhAXqkA54ekOuCV1htV4DW15kdFmp1Az9ZXyYsZnQ2i",
-    "nationalId": "0987654321",
-    "district": "Bhaktapur",
-    "municipality": "Madhyapur Thimi",
-    "ward": "1"
+    "nationalId": "6",
+    "district": "Lalitpur",
+    "municipality": "Mahalaxmi"
   },
   {
     "fullName": "test7",
     "fatherName": "Father7",
-    "dateOfBirth": "2007-07-07",
+    "dateOfBirth": "2000-01-07",
     "gender": "Male",
-
-    "password": "$2a$10$S7F1Zh0Qq5bhAXqkA54ekOuCV1htV4DW15kdFmp1Az9ZXyYsZnQ2i",
     "nationalId": "7",
-    "district": "Kathmandu",
-    "municipality": "Kathmandu Metropolitan",
-    "ward": "2"
+    "district": "Bhaktapur",
+    "municipality": "Bhaktapur Municipality"
+  },
+  {
+    "fullName": "test8",
+    "fatherName": "Father8",
+    "dateOfBirth": "2000-01-08",
+    "gender": "Female",
+    "nationalId": "8",
+    "district": "Bhaktapur",
+    "municipality": "Madhyapur Thimi"
+  },
+  {
+    "fullName": "test9",
+    "fatherName": "Father9",
+    "dateOfBirth": "2000-01-09",
+    "gender": "Male",
+    "nationalId": "9",
+    "district": "Bhaktapur",
+    "municipality": "Madhyapur Thimi"
   }
+
 ]

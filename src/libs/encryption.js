@@ -1,4 +1,4 @@
-// Helper function to calculate the greatest common divisor (GCD)
+
 function gcd(a, b) {
   while (b !== 0) {
     const temp = b;
@@ -8,7 +8,7 @@ function gcd(a, b) {
   return a;
 }
 
-// Helper function to calculate modular inverse
+
 function modInverse(a, m) {
   let m0 = m, x0 = 0, x1 = 1;
   if (m === 1) return 0;
@@ -27,7 +27,6 @@ function modInverse(a, m) {
   return x1;
 }
 
-// Function to compute the power of a number mod m
 function modPow(base, exponent, modulus) {
   let result = 1;
   base = base % modulus;
@@ -43,7 +42,7 @@ function modPow(base, exponent, modulus) {
   return result;
 }
 
-// Generate RSA Keys
+
 function generateRSAKeys() {
   const p = 61; // Prime number p
   const q = 53; // Prime number q

@@ -276,7 +276,7 @@ export default function CreateCandidatePage() {
               onClick={() => addCandidate(postType)}
               className="w-full p-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition duration-300"
             >
-              Add Another {postType === 'mayorCandidates' ? 'Mayor' : 'Deputy Mayor'} Candidate
+              Add  {postType === 'mayorCandidates' ? 'Mayor' : 'Deputy Mayor'} Candidate
             </button>
           </div>
         ))}

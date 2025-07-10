@@ -10,7 +10,7 @@ export default function EditVoterPage() {
 
   const [fullName, setFullName] = useState("");
   const [fatherName, setFatherName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  
   const [nationalId, setNationalId] = useState("");
   const [district, setDistrict] = useState("");
   const [municipality, setMunicipality] = useState("");
@@ -54,7 +54,7 @@ export default function EditVoterPage() {
         const voter = data.voter;
         setFullName(voter.fullName || "");
         setFatherName(voter.fatherName || "");
-        setPhoneNumber(voter.phoneNumber || "");
+        
         setNationalId(voter.nationalId || "");
         setDistrict(voter.district || "");
         setMunicipality(voter.municipality || ""); // Set municipality if available
@@ -77,7 +77,6 @@ export default function EditVoterPage() {
 
     if (
       !fullName ||
-      !phoneNumber ||
       !fatherName ||
       !nationalId ||
       !dateOfBirth ||
@@ -95,7 +94,6 @@ export default function EditVoterPage() {
         method: "PUT",
         body: JSON.stringify({
           fullName,
-          phoneNumber,
           fatherName,
           nationalId,
           dateOfBirth: new Date(dateOfBirth), // Convert to Date object
@@ -168,16 +166,6 @@ export default function EditVoterPage() {
             />
           </div>
 
-          {/* Phone Number */}
-          <div className="mb-6">
-            <input
-              type="text"
-              placeholder="Phone Number"
-              value={phoneNumber}
-              onChange={(ev) => setPhoneNumber(ev.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
 
           {/* National ID */}
           <div className="mb-6">

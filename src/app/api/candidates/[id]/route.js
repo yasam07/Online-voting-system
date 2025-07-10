@@ -66,11 +66,11 @@ export async function PUT(req, { params }) {
       $or: [
         {
           'mayorCandidates.candidateId': candidateId,
-       //   'mayorCandidates._id': { $ne: id }, // Exclude the current candidate
+          'mayorCandidates._id': { $ne: id }, // Exclude the current candidate
         },
         {
           'deputyMayorCandidates.candidateId': candidateId,
-         // 'deputyMayorCandidates._id': { $ne: id }, // Exclude the current candidate
+          'deputyMayorCandidates._id': { $ne: id }, // Exclude the current candidate
         },
       ],
     });
@@ -82,63 +82,126 @@ export async function PUT(req, { params }) {
       );
     }
 
-    // Step 3: Check for duplicate party across both mayor and deputy mayor candidates in the same municipality
-    const duplicatePartyInMayor = await Candidate.findOne({
-      municipality,
-      'mayorCandidates.party': party,
-      'mayorCandidates._id': { $ne: id }, // Exclude the current candidate
-    });
-
-    const duplicatePartyInDeputyMayor = await Candidate.findOne({
-      municipality,
-      'deputyMayorCandidates.party': party,
-      'deputyMayorCandidates._id': { $ne: id }, // Exclude the current candidate
-    });
-
-    if (duplicatePartyInMayor || duplicatePartyInDeputyMayor) {
-      return NextResponse.json(
-        { error: `The party "${party}" already has a candidate in the municipality. A party cannot have candidates in both mayor and deputy mayor roles.` },
-        { status: 400 }
-      );
-    }
-
-    // Step 4: Update the candidate in the respective array
-    const updatedMayor = await Candidate.findOneAndUpdate(
-      { 'mayorCandidates._id': id },
-      {
-        $set: {
-          'mayorCandidates.$.name': name,
-          'mayorCandidates.$.candidateId': candidateId,
-          'mayorCandidates.$.party': party,
-        },
-      },
-      { new: true, runValidators: true }
+    // Step 3: Determine if the candidate is a mayor or deputy mayor
+    const isMayorCandidate = candidateDocument.mayorCandidates.some(
+      (cand) => cand._id.toString() === id
+    );
+    const isDeputyMayorCandidate = candidateDocument.deputyMayorCandidates.some(
+      (cand) => cand._id.toString() === id
     );
 
-    if (updatedMayor) {
-      return NextResponse.json(
-        { message: 'Mayor candidate updated successfully', candidate: updatedMayor },
-        { status: 200 }
-      );
+   // Step 4: Check for duplicate party within the same role (mayor or deputy mayor)
+if (isMayorCandidate) {
+  console.log(`Checking for duplicate party in mayor for party: ${party}`);
+  const duplicatePartyInMayor = await Candidate.findOne({
+    municipality,
+    'mayorCandidates': {
+      $elemMatch: {
+        party: party,             // Match the same party
+        _id: { $ne: id },         // Exclude the current candidate's _id
+      },
+    },
+  });
+
+  if (duplicatePartyInMayor) {
+    console.log(`Duplicate party found in mayor role: ${party}`);
+    return NextResponse.json(
+      { error: `The party "${party}" already has a mayor candidate in this municipality.` },
+      { status: 400 }
+    );
+  }
+}
+
+if (isDeputyMayorCandidate) {
+  console.log(`Checking for duplicate party in deputy mayor for party: ${party}`);
+  const duplicatePartyInDeputyMayor = await Candidate.findOne({
+    municipality,
+    'deputyMayorCandidates': {
+      $elemMatch: {
+        party: party,             // Match the same party
+        _id: { $ne: id },         // Exclude the current candidate's _id
+      },
+    },
+  });
+
+  if (duplicatePartyInDeputyMayor) {
+    console.log(`Duplicate party found in deputy mayor role: ${party}`);
+    return NextResponse.json(
+      { error: `The party "${party}" already has a deputy mayor candidate in this municipality.` },
+      { status: 400 }
+    );
+  }
+}
+
+
+    // Step 5: Check if the party is already assigned to the other role (allow mayor and deputy mayor to share the same party)
+    if (isMayorCandidate && !isDeputyMayorCandidate) {
+      // Check if party is used by a deputy mayor in the same municipality
+      console.log(`Checking if party "${party}" is used by a deputy mayor in municipality: ${municipality}`);
+      const partyInDeputyMayor = await Candidate.findOne({
+        municipality,
+        'deputyMayorCandidates.party': party,
+      });
+
+      if (partyInDeputyMayor) {
+        console.log(`Party "${party}" is already used by a deputy mayor.`);
+      }
     }
 
-    const updatedDeputyMayor = await Candidate.findOneAndUpdate(
-      { 'deputyMayorCandidates._id': id },
-      {
-        $set: {
-          'deputyMayorCandidates.$.name': name,
-          'deputyMayorCandidates.$.candidateId': candidateId,
-          'deputyMayorCandidates.$.party': party,
-        },
-      },
-      { new: true, runValidators: true }
-    );
+    if (isDeputyMayorCandidate && !isMayorCandidate) {
+      // Check if party is used by a mayor in the same municipality
+      console.log(`Checking if party "${party}" is used by a mayor in municipality: ${municipality}`);
+      const partyInMayor = await Candidate.findOne({
+        municipality,
+        'mayorCandidates.party': party,
+      });
 
-    if (updatedDeputyMayor) {
-      return NextResponse.json(
-        { message: 'Deputy mayor candidate updated successfully', candidate: updatedDeputyMayor },
-        { status: 200 }
+      if (partyInMayor) {
+        console.log(`Party "${party}" is already used by a mayor.`);
+      }
+    }
+
+    // Step 6: Update the candidate in the respective array
+    if (isMayorCandidate) {
+      const updatedMayor = await Candidate.findOneAndUpdate(
+        { 'mayorCandidates._id': id },
+        {
+          $set: {
+            'mayorCandidates.$.name': name,
+            'mayorCandidates.$.candidateId': candidateId,
+            'mayorCandidates.$.party': party,
+          },
+        },
+        { new: true, runValidators: true }
       );
+
+      if (updatedMayor) {
+        return NextResponse.json(
+          { message: 'Mayor candidate updated successfully', candidate: updatedMayor },
+          { status: 200 }
+        );
+      }
+    }
+
+    if (isDeputyMayorCandidate) {
+      const updatedDeputyMayor = await Candidate.findOneAndUpdate(
+        { 'deputyMayorCandidates._id': id },
+        {
+          $set: {
+            'deputyMayorCandidates.$.name': name,
+            'deputyMayorCandidates.$.candidateId': candidateId,
+            'deputyMayorCandidates.$.party': party,
+          },
+        },
+        { new: true, runValidators: true }
+      );
+
+      if (updatedDeputyMayor) {
+        return NextResponse.json(
+          { message: 'Deputy mayor candidate updated successfully', candidate: updatedDeputyMayor },
+          { status: 200 }
+        );
+      }
     }
 
     return NextResponse.json({ error: 'Candidate not found' }, { status: 404 });
@@ -151,9 +214,11 @@ export async function PUT(req, { params }) {
   }
 }
 
+
+
 export async function GET(req, { params }) {
   const { id } = params;
-  console.log(id)
+  console.log(id);
   if (!id || !isValidObjectId(id)) {
     return NextResponse.json({ error: 'Valid Candidate ID is required' }, { status: 400 });
   }
